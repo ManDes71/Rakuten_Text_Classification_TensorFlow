@@ -27,7 +27,7 @@ from tensorflow.keras.preprocessing.text import tokenizer_from_json
 
 
 config = configparser.ConfigParser()
-config.read('E:\\Manuel\\PROJET\\Rakuten_config_colab.ini')
+config.read('/content/Rakuten_Text_Classification_TensorFlow/Rakuten_config_colab.ini')
 
 def get_RACINE_DOSSIER() :
     return config['DOSSIER']['RACINE_DOSSIER']
