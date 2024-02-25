@@ -38,7 +38,7 @@ import spacy
 import tensorflow as tf
 from tensorflow.keras.utils import to_categorical
 
-import Bibli_DataScience_3 as ds
+import Bibli_DataScience_3_3 as ds
 
 def unicode_to_ascii(s):
     return ''.join(c for c in unicodedata.normalize('NFD', s)
@@ -86,6 +86,7 @@ class DS_RNN(ds.DS_Model):
         self.__nom_modele = nom_modele
         self.__model = Sequential()
         
+        self.stop_words = self.get_stopwordFR()['MOT'].tolist()
         self.__df_pred = pd.DataFrame()
         self.__df_feats = pd.DataFrame()
         self.__df_target = pd.DataFrame()
@@ -176,21 +177,14 @@ class DS_RNN(ds.DS_Model):
         df = self.get_DF()
         self.__df_feats = df[['designation','description','productid','imageid']]
         self.__df_target = df['prdtypecode']
-        self.__df_feats['phrases'] = self.__df_feats.swifter.apply(combine_description_and_designation, axis=1) 
+        
         
      def add_traitement(self,mots,pays_langue) :
         return mots
      
-     def combine_description_and_designation(row):
-        partie_design = row['designation'] if isinstance(row['designation'], str) else ''
-        partie_descrip = row['description'] if isinstance(row['description'], str) else ''
-        return partie_design + ' ' + partie_descrip if len(partie_descrip) > 0 else partie_design
-
      
-     def unicode_to_ascii(s):
-        return ''.join(c for c in unicodedata.normalize('NFD', s)
-            if unicodedata.category(c) != 'Mn')
-     def preprocess_sentence(w):
+     
+     def preprocess_sentence(self,w):
         w = str(w)
     # Remplacer les entités HTML par des caractères spécifiques ou les supprimer
         replacements = {
@@ -226,17 +220,17 @@ class DS_RNN(ds.DS_Model):
 
         # Suppression des stopwords
         mots = word_tokenize(w.strip())
-        mots = [mot for mot in mots if mot not in stop_words]
+        mots = [mot for mot in mots if mot not in self.stop_words]
         return ' '.join(mots).strip()
 
      def preprossessing_X(self,row):
         pays_langue = row['PAYS_LANGUE']
         
-        mots = row['phrases'].swifter.apply(lambda x :preprocess_sentence(x))
+        mots =self.preprocess_sentence(row['phrases'])
         
         return {'phrases': mots, 'PAYS_LANGUE': pays_langue}
     
-     def traiter_phrases(self,design,descrip):
+     def traiter_phrases(self):
         DESCRIP = []
         partie_design = design if type(design) == str else ''
         partie_descrip = descrip if type(descrip) == str else ''
@@ -320,6 +314,7 @@ class DS_RNN(ds.DS_Model):
         #    s = (partie_design + ' ' + partie_descrip) if len(partie_descrip) > 0 else partie_design
         #    DESCRIP_test.append(s)
         
+        print(X_train_avant.info())
       
         #X_train = pd.Series(DESCRIP_train)
         #X_test = pd.Series(DESCRIP_test)
@@ -354,7 +349,7 @@ class DS_RNN(ds.DS_Model):
         print("self.EMBEDDING_DIM",self.EMBEDDING_DIM)  
         if spacy:
             print("creation dictionnaire") 
-            for lang, sentence in zip(X_train['PAYS_LANGUE'],X_train['designation']):  # Remplacez 'your_dataset' par votre propre ensemble de données
+            for lang, sentence in zip(X_train['PAYS_LANGUE'],X_train['phrases']):  # Remplacez 'your_dataset' par votre propre ensemble de données
                 #print(lang, sentence)
                 for word in sentence.split():
                     #print(word)
@@ -370,8 +365,8 @@ class DS_RNN(ds.DS_Model):
                     embedding_matrix[i] = embedding_vector            
         print("suite")
         #print("embedding_matrix.shape = " ,embedding_matrix.shape)
-        X_train = X_train['designation']
-        X_test = X_test['designation']
+        X_train = X_train['phrases']
+        X_test = X_test['phrases']
         
         y_train,y_test,label_encoder = self.preprossessing_Y(y_train,y_test)
         

@@ -312,6 +312,11 @@ class DS_Model:
         
         self.__chargement_fichiers()
         
+     def combine_description_and_designation(self,row):
+        partie_design = row['designation'] if isinstance(row['designation'], str) else ''
+        partie_descrip = row['description'] if isinstance(row['description'], str) else ''
+        return partie_design + ' ' + partie_descrip if len(partie_descrip) > 0 else partie_design   
+        
      def __chargement_fichiers(self):
         
         #config = configparser.ConfigParser()
@@ -348,6 +353,9 @@ class DS_Model:
         
         folder_path = DOSSIER_IMAGES_TRAIN
         self.__df['filepath']=self.__df['nom_image'].apply(lambda x : os.path.join(folder_path, x))
+        
+        self.__df['phrases'] = self.__df.swifter.apply(self.combine_description_and_designation, axis=1) 
+      
         
         self.__stopwordFR = pd.read_csv(DATAFRAME_STOPWORDS)
         
