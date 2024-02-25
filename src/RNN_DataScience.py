@@ -230,30 +230,11 @@ class DS_RNN(ds.DS_Model):
         return ' '.join(mots).strip()
 
      def preprossessing_X(self,row):
-        w = row['designation']
         pays_langue = row['PAYS_LANGUE']
         
-        #print("w=",w)
-        #print("pays_langue=",pays_langue)
-     
-        stop_words = self.get_stopwordFR()
-        w = unicode_to_ascii(w.lower().strip())
-        # creating a space between a word and the punctuation following it
-        # eg: "he is a boy." => "he is a boy ."
-        w = re.sub(r"([?.!,¿])", r" \1 ", w)
-        w = re.sub(r'[" "]+', " ", w)
-        # replacing everything with space except (a-z, A-Z,0-9, ".", "?", "!", ",","°")
-        w = re.sub(r"[^a-zA-Z0-9âéè°]+", " ", w)
-        w = re.sub(r'\b\w{0,2}\b', '', w)
-
-        # remove stopword
-        mots = word_tokenize(w.strip())
-        mots = [mot for mot in mots if mot not in stop_words]
-        mots = self.add_traitement(mots,pays_langue)
-        #print("mot final 1 = ",mots)
-        #print("mot final 2 = ",' '.join(mots).strip())
-        #return ' '.join(mots).strip()
-        return {'designation': ' '.join(mots).strip(), 'PAYS_LANGUE': pays_langue}
+        mots = row['phrases'].swifter.apply(lambda x :preprocess_sentence(x))
+        
+        return {'phrases': mots, 'PAYS_LANGUE': pays_langue}
     
      def traiter_phrases(self,design,descrip):
         DESCRIP = []
