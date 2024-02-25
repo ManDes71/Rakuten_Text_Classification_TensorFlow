@@ -176,10 +176,59 @@ class DS_RNN(ds.DS_Model):
         df = self.get_DF()
         self.__df_feats = df[['designation','description','productid','imageid']]
         self.__df_target = df['prdtypecode']
+        self.__df_feats['phrases'] = self.__df_feats.swifter.apply(combine_description_and_designation, axis=1) 
         
      def add_traitement(self,mots,pays_langue) :
         return mots
      
+     def combine_description_and_designation(row):
+        partie_design = row['designation'] if isinstance(row['designation'], str) else ''
+        partie_descrip = row['description'] if isinstance(row['description'], str) else ''
+        return partie_design + ' ' + partie_descrip if len(partie_descrip) > 0 else partie_design
+
+     
+     def unicode_to_ascii(s):
+        return ''.join(c for c in unicodedata.normalize('NFD', s)
+            if unicodedata.category(c) != 'Mn')
+     def preprocess_sentence(w):
+        w = str(w)
+    # Remplacer les entités HTML par des caractères spécifiques ou les supprimer
+        replacements = {
+            '&eacute;': 'e',
+            '&amp;': '',    # Esperluette
+            '&lt;': '',     # Inférieur à
+            '&gt;': '',     # Supérieur à
+            '&quot;': '',   # Guillemet double
+            '&apos;': '',   # Apostrophe
+            '&nbsp;': '',   # Espace insécable
+            '&copy;': '',   # Droit d'auteur
+            '&reg;': '',    # Marque déposée
+            '&euro;': '',   # Symbole de l'euro
+            '&rsquo;': '',
+            '&agrave;': 'a',
+            '&ccedil;': 'c',
+            '&egrave;': 'e',
+            '&iacute;': 'i',
+            '&ntilde;': 'n',
+            '&ouml;': 'o',
+        }
+        for entity, replacement in replacements.items():
+            w = w.replace(entity, replacement)
+        w = unicode_to_ascii(w.lower().strip())
+        # Appliquer les autres règles de nettoyage
+        w = w.replace("n°", "??numero??")
+        w = re.sub(r"([?.!,¿])", r" \1 ", w)
+        w = re.sub(r'[" "]+', " ", w)
+        w = re.sub(r"[^a-zA-Z?.!°]+", " ", w)
+        w = re.sub(r'\b\w{0,2}\b', '', w)
+        w = w.replace("? ? numero ? ?", "n°")
+
+
+        # Suppression des stopwords
+        mots = word_tokenize(w.strip())
+        mots = [mot for mot in mots if mot not in stop_words]
+        return ' '.join(mots).strip()
+
      def preprossessing_X(self,row):
         w = row['designation']
         pays_langue = row['PAYS_LANGUE']
@@ -272,32 +321,33 @@ class DS_RNN(ds.DS_Model):
             
             return X_train, X_test, y_train_avant, y_test_avant
         
-           
+
+         
         X_train_avant, X_test_avant, y_train_avant, y_test_avant = super().Train_Test_Split_(train_size, random_state)
         
-        DESCRIP_train = []
-        for design, descrip in zip( X_train_avant['designation'],  X_train_avant['description']):
-            partie_design = design if type(design) == str else ''
-            partie_descrip = descrip if type(descrip) == str else ''
-            s = (partie_design + ' ' + partie_descrip) if len(partie_descrip) > 0 else partie_design
-            DESCRIP_train.append(s)
+        #DESCRIP_train = []
+        #for design, descrip in zip( X_train_avant['designation'],  X_train_avant['description']):
+        #    partie_design = design if type(design) == str else ''
+        #    partie_descrip = descrip if type(descrip) == str else ''
+        #    s = (partie_design + ' ' + partie_descrip) if len(partie_descrip) > 0 else partie_design
+        #    DESCRIP_train.append(s)
         
-        DESCRIP_test = []
-        for design, descrip in zip( X_test_avant['designation'],  X_test_avant['description']):
-            partie_design = design if type(design) == str else ''
-            partie_descrip = descrip if type(descrip) == str else ''
-            s = (partie_design + ' ' + partie_descrip) if len(partie_descrip) > 0 else partie_design
-            DESCRIP_test.append(s)
+        #DESCRIP_test = []
+        #for design, descrip in zip( X_test_avant['designation'],  X_test_avant['description']):
+        #    partie_design = design if type(design) == str else ''
+        #    partie_descrip = descrip if type(descrip) == str else ''
+        #    s = (partie_design + ' ' + partie_descrip) if len(partie_descrip) > 0 else partie_design
+        #    DESCRIP_test.append(s)
         
       
-        X_train = pd.Series(DESCRIP_train)
-        X_test = pd.Series(DESCRIP_test)
+        #X_train = pd.Series(DESCRIP_train)
+        #X_test = pd.Series(DESCRIP_test)
         #X_train = X_train_avant[['designation', 'PAYS_LANGUE']].apply(self.preprossessing_X, axis=1)
         #X_test = X_test_avant[['designation', 'PAYS_LANGUE']].apply(self.preprossessing_X, axis=1)
         
-        X_train_processed_list = X_train_avant[['designation', 'PAYS_LANGUE']].apply(self.preprossessing_X, axis=1).tolist()
+        X_train_processed_list = X_train_avant[['phrases', 'PAYS_LANGUE']].apply(self.preprossessing_X, axis=1).tolist()
         X_train = pd.DataFrame(X_train_processed_list)
-        X_test_processed_list = X_test_avant[['designation', 'PAYS_LANGUE']].apply(self.preprossessing_X, axis=1).tolist()
+        X_test_processed_list = X_test_avant[['phrases', 'PAYS_LANGUE']].apply(self.preprossessing_X, axis=1).tolist()
         X_test = pd.DataFrame(X_test_processed_list)
         
         if fic == "Save" :
