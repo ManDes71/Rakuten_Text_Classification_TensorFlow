@@ -5,8 +5,6 @@ import os
 
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
-from imblearn.under_sampling import RandomUnderSampler
-from imblearn.over_sampling import RandomOverSampler
 from sklearn.preprocessing import LabelEncoder
 from keras.initializers import Constant
 
@@ -16,7 +14,6 @@ from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
 from  nltk.stem.snowball import FrenchStemmer,EnglishStemmer,GermanStemmer,ItalianStemmer,DutchStemmer,SpanishStemmer,ItalianStemmer
 
-#from transformers import CamembertTokenizer, TFCamembertForSequenceClassification
 
 from tensorflow.keras import Sequential,Input, Model
 from tensorflow.keras.layers import Embedding, Dense, GlobalAveragePooling1D, RNN, GRUCell
