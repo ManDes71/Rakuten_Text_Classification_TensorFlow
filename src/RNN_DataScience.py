@@ -222,11 +222,35 @@ class DS_RNN(ds.DS_Model):
         mots = word_tokenize(w.strip())
         mots = [mot for mot in mots if mot not in self.stop_words]
         return ' '.join(mots).strip()
+        
+     def preprocess_text(text):
+        try:
+            lang = detect(text)
+        except:
+            lang = "fr"  # Définit le français comme langue par défaut
+        #text = text.lower()
+        text = text.translate(str.maketrans('', '', string.punctuation))
+        # Utilise le français comme langue de fallback pour la tokenisation
+        tokens = word_tokenize(text, language='french' if lang not in ['en', 'es', 'de', 'nl', 'it', 'ca'] else lang)
+        # Définit le français comme langue de fallback pour les stop words
+        stop_words = set(stopwords.words({
+            'en': 'english',
+            'es': 'spanish',
+            'de': 'german',
+            'nl': 'dutch',
+            'it': 'italian',
+            'ca': 'french',  # Utilise explicitement le français pour le catalan
+            'fr': 'french'
+        }.get(lang, 'french')))  # Fallback sur le français pour toute autre langue non spécifiée
+
+        tokens = [word for word in tokens if word not in stop_words]
+        return tokens   
 
      def preprossessing_X(self,row):
         pays_langue = row['PAYS_LANGUE']
         
         mots =self.preprocess_sentence(row['phrases'])
+        mots = self.preprocess_text(mots)
         
         return {'phrases': mots, 'PAYS_LANGUE': pays_langue}
     
@@ -300,26 +324,11 @@ class DS_RNN(ds.DS_Model):
          
         X_train_avant, X_test_avant, y_train_avant, y_test_avant = super().Train_Test_Split_(train_size, random_state)
         
-        #DESCRIP_train = []
-        #for design, descrip in zip( X_train_avant['designation'],  X_train_avant['description']):
-        #    partie_design = design if type(design) == str else ''
-        #    partie_descrip = descrip if type(descrip) == str else ''
-        #    s = (partie_design + ' ' + partie_descrip) if len(partie_descrip) > 0 else partie_design
-        #    DESCRIP_train.append(s)
         
-        #DESCRIP_test = []
-        #for design, descrip in zip( X_test_avant['designation'],  X_test_avant['description']):
-        #    partie_design = design if type(design) == str else ''
-        #    partie_descrip = descrip if type(descrip) == str else ''
-        #    s = (partie_design + ' ' + partie_descrip) if len(partie_descrip) > 0 else partie_design
-        #    DESCRIP_test.append(s)
         
         print(X_train_avant.info())
       
-        #X_train = pd.Series(DESCRIP_train)
-        #X_test = pd.Series(DESCRIP_test)
-        #X_train = X_train_avant[['designation', 'PAYS_LANGUE']].apply(self.preprossessing_X, axis=1)
-        #X_test = X_test_avant[['designation', 'PAYS_LANGUE']].apply(self.preprossessing_X, axis=1)
+        
         
         X_train_processed_list = X_train_avant[['phrases', 'PAYS_LANGUE']].apply(self.preprossessing_X, axis=1).tolist()
         X_train = pd.DataFrame(X_train_processed_list)
