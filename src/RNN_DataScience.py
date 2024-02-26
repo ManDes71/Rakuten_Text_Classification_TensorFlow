@@ -403,14 +403,14 @@ class DS_RNN(ds.DS_Model):
         
         print(X_train_avant.info())
       
-        print("etape 1")
+        print("etape 1/6")
         
         X_train_processed_list = X_train_avant[['phrases', 'PAYS_LANGUE']].apply(self.preprossessing_X, axis=1).tolist()
         X_train = pd.DataFrame(X_train_processed_list)
-        print("etape 2")
+        print("etape 2/6")
         X_test_processed_list = X_test_avant[['phrases', 'PAYS_LANGUE']].apply(self.preprossessing_X, axis=1).tolist()
         X_test = pd.DataFrame(X_test_processed_list)
-        print("etape 3")
+        print("etape 3/6")
         if fic == "Save" :
             print("Sauvegarde de jeu d'entrainement")
             ds.save_ndarray(X_train,self.__nom_modele+'_X_train')
@@ -466,11 +466,11 @@ class DS_RNN(ds.DS_Model):
             X_train_preprocessed = [self.preprocess_lemmer(tokens) for tokens in X_train]
             X_test_preprocessed = [self.preprocess_lemmer(tokens) for tokens in X_test]
         elif spacy:
-            print("etape 5")
+            print("etape 4/6")
             X_train_preprocessed = [self.preprocess_spacy(tokens) for tokens in X_train]
-            print("etape 6")
+            print("etape 5/6")
             X_test_preprocessed = [self.preprocess_spacy(tokens) for tokens in X_test]
-            print("etape 7")
+            print("etape 6/6")
     
         
         
@@ -608,33 +608,7 @@ class RNN_EMBEDDING(DS_RNN):
         self.set_model(model)
 
         return model 
-        
-class RNN_EMBEDDING2(DS_RNN):     
-
-     def __init__(self, nom_modele):
-        super().__init__(nom_modele)
-            
-        self.__nom_modele = nom_modele
-        self.set_REPORT_ID("EMBED1")
-        self.set_REPORT_MODELE(nom_modele)
-        self.set_REPORT_LIBELLE("EMBEDDING")
-        
-     def create_modele(self,Matrix=None,vocab_size=0):
-        x  = input_layer = Input(shape=(self.MAXLEN,))
-        x  = Embedding(vocab_size, self.EMBEDDING_DIM)(x)
-        x  = Conv1D(filters=32, kernel_size=8, activation='relu')(x)
-        x  = GlobalAveragePooling1D()(x)
-        x  = Flatten()(x)
-        x  = Dense(256, activation='relu')(x)
-        x  = Dropout(0.4)(x)
-        output_layer = Dense(27, activation='softmax')(x)
-
-        model = Model(inputs=input_layer, outputs=output_layer)
-        model.compile(optimizer=Adam(learning_rate=1e-3), loss='categorical_crossentropy', metrics=['accuracy'])    
-        
-        self.set_model(model)
-
-        return model         
+           
         
 class RNN_STEMMER(DS_RNN):     
 
@@ -711,7 +685,7 @@ class RNN_GRU(DS_RNN):
      def create_modele(self,Matrix=None,vocab_size=0):
         model = Sequential()
         model.add(Embedding(vocab_size, self.EMBEDDING_DIM))
-        print("NUM_WORDS", self.NUM_WORDS)
+        print("NUM_WORDS", vocab_size)
         print("EMBEDDING_DIM", self.EMBEDDING_DIM)
         model.add(RNN(GRUCell(128), return_sequences=True))
         model.add(Dropout(0.5))
@@ -784,18 +758,19 @@ class RNN_SPACY(DS_RNN):
      def create_modele(self,Matrix=None,vocab_size=0):
     
         print("output : ",self.EMBEDDING_DIM)
-        #print("Matrix.shape = " ,Matrix.shape)
-        print("len_embedding_dict = " ,len_embedding_dict)
+        print("vocab_size = " ,vocab_size)
         model = Sequential()
-        model.add(Embedding(vocab_size, self.EMBEDDING_DIM, embeddings_initializer=Constant(Matrix), trainable=False))
+        #model.add(Embedding(vocab_size, self.EMBEDDING_DIM, embeddings_initializer=Constant(Matrix), trainable=False))
         #model.add(Bidirectional(LSTM(64, dropout=0.25, recurrent_dropout=0.1)))
         #model.add(LSTM(128))
         #model.add(Conv1D(filters=64, kernel_size=8, activation='relu'))
-        model.add(Conv1D(filters=128, kernel_size=8, activation='relu'))
+        model.add(Embedding(vocab_size, self.EMBEDDING_DIM))
+        model.add(Conv1D(filters=32, kernel_size=8, activation='relu'))
         model.add(GlobalAveragePooling1D())
-        model.add(Dropout(0.5))
+        model.add(Flatten())
         model.add(Dense(256, activation='relu'))
-        model.add(Dropout(0.5))
+        model.add(BatchNormalization())
+        model.add(Dropout(0.4))
         model.add(Dense(27, activation='softmax'))
         model.compile(optimizer=Adam(learning_rate=1e-3), loss='categorical_crossentropy', metrics=['accuracy'])   
         
