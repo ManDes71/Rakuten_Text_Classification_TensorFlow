@@ -307,6 +307,27 @@ class DS_RNN(ds.DS_Model):
             preprocessed_tokens.append(lemmatized_token)
 
         return preprocessed_tokens   
+        
+     def preprocess_spacy(self,text):
+        # Détection de la langue
+        try:
+            lang = detect(text)
+        except:
+            lang = "en"  # Langue par défaut
+
+        # Sélection du modèle SpaCy approprié
+        nlp = self.get_spacy_model(lang)
+
+
+        # Nettoyage du texte
+        #text = text.lower()
+        text = text.translate(str.maketrans('', '', string.punctuation))
+
+        # Lemmatisation avec SpaCy
+        doc = nlp(text)
+        lemmatized_tokens = [token.lemma_ for token in doc if not token.is_stop and not token.is_punct and not token.is_space]
+
+        return lemmatized_tokens      
     
      def traiter_phrases(self):
         DESCRIP = []
@@ -382,13 +403,14 @@ class DS_RNN(ds.DS_Model):
         
         print(X_train_avant.info())
       
-        
+        print("etape 1")
         
         X_train_processed_list = X_train_avant[['phrases', 'PAYS_LANGUE']].apply(self.preprossessing_X, axis=1).tolist()
         X_train = pd.DataFrame(X_train_processed_list)
+        print("etape 2")
         X_test_processed_list = X_test_avant[['phrases', 'PAYS_LANGUE']].apply(self.preprossessing_X, axis=1).tolist()
         X_test = pd.DataFrame(X_test_processed_list)
-        
+        print("etape 3")
         if fic == "Save" :
             print("Sauvegarde de jeu d'entrainement")
             ds.save_ndarray(X_train,self.__nom_modele+'_X_train')
@@ -410,22 +432,22 @@ class DS_RNN(ds.DS_Model):
         #print(X_train['PAYS_LANGUE'][:5])
         #print(X_train['designation'][:5])
         print("self.EMBEDDING_DIM",self.EMBEDDING_DIM)  
-        if spacy:
-            print("creation dictionnaire") 
-            for lang, sentence in zip(X_train['PAYS_LANGUE'],X_train['phrases']):  # Remplacez 'your_dataset' par votre propre ensemble de données
-                #print(lang, sentence)
-                for word in sentence.split():
-                    #print(word)
-                    if word not in embedding_dict:
-                        embedding_dict[word] = self.get_vector(word, lang)
-            print("longueur dictionnaire",len(embedding_dict))            
-            print("creation matrice") 
-            embedding_matrix = np.zeros((len(embedding_dict)+1, self.EMBEDDING_DIM))  # Remplacez 'EMBEDDING_DIM' par la dimension de votre embedding
-            print("embedding_matrix.shape = " ,embedding_matrix.shape)
-            for i, word in enumerate(embedding_dict.keys()):
-                embedding_vector = embedding_dict.get(word)
-                if embedding_vector is not None:
-                    embedding_matrix[i] = embedding_vector            
+        #if spacy:
+        #    print("creation dictionnaire") 
+        #    for lang, sentence in zip(X_train['PAYS_LANGUE'],X_train['phrases']):  # Remplacez 'your_dataset' par votre propre ensemble de données
+        #        #print(lang, sentence)
+        #        for word in sentence.split():
+        #            #print(word)
+        #            if word not in embedding_dict:
+        #                embedding_dict[word] = self.get_vector(word, lang)
+        #    print("longueur dictionnaire",len(embedding_dict))            
+        #    print("creation matrice") 
+        #    embedding_matrix = np.zeros((len(embedding_dict)+1, self.EMBEDDING_DIM))  # Remplacez 'EMBEDDING_DIM' par la dimension de votre embedding
+        #    print("embedding_matrix.shape = " ,embedding_matrix.shape)
+        #    for i, word in enumerate(embedding_dict.keys()):
+        #        embedding_vector = embedding_dict.get(word)
+        #        if embedding_vector is not None:
+        #            embedding_matrix[i] = embedding_vector            
         print("suite")
         #print("embedding_matrix.shape = " ,embedding_matrix.shape)
         X_train = X_train['phrases']
@@ -435,13 +457,7 @@ class DS_RNN(ds.DS_Model):
         
        
         
-        tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=self.NUM_WORDS)
-        # Mettre à jour le dictionnaire du tokenizer
-        tokenizer.fit_on_texts(X_train)
         
-        word2idx = tokenizer.word_index
-        idx2word = tokenizer.index_word
-        vocab_size = tokenizer.num_words
         
         if stemming:
             X_train_preprocessed = [self.preprocess_stemmer(tokens) for tokens in X_train]
@@ -449,7 +465,23 @@ class DS_RNN(ds.DS_Model):
         elif lemming:
             X_train_preprocessed = [self.preprocess_lemmer(tokens) for tokens in X_train]
             X_test_preprocessed = [self.preprocess_lemmer(tokens) for tokens in X_test]
+        elif spacy:
+            print("etape 5")
+            X_train_preprocessed = [self.preprocess_spacy(tokens) for tokens in X_train]
+            print("etape 6")
+            X_test_preprocessed = [self.preprocess_spacy(tokens) for tokens in X_test]
+            print("etape 7")
+    
         
+        
+        tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=self.NUM_WORDS)
+        # Mettre à jour le dictionnaire du tokenizer
+        tokenizer.fit_on_texts(X_train)
+        
+        word2idx = tokenizer.word_index
+        idx2word = tokenizer.index_word
+        #vocab_size = tokenizer.num_words
+        vocab_size = len(tokenizer.word_index) + 1  # Taille du vocabulaire
 
         X_train = tokenizer.texts_to_sequences(X_train)
         X_test = tokenizer.texts_to_sequences(X_test)
@@ -457,9 +489,9 @@ class DS_RNN(ds.DS_Model):
         X_train = tf.keras.preprocessing.sequence.pad_sequences(X_train, maxlen=self.MAXLEN, padding='post', truncating='post')
         X_test = tf.keras.preprocessing.sequence.pad_sequences(X_test, maxlen=self.MAXLEN, padding='post', truncating='post')
                
-        print( "input : ",len(embedding_dict)) 
-        print( "len(embedding_dict) : ",len(embedding_dict))
-        model = self.create_modele(embedding_matrix,len(embedding_dict)+1)    
+        #print( "input : ",len(embedding_dict)) 
+        print( "vocab_size : ",vocab_size)
+        model = self.create_modele(embedding_matrix,vocab_size)    
         
         if Train == "Load" :
             ds.load_model(model,self.__nom_modele+'_weight')
@@ -561,9 +593,9 @@ class RNN_EMBEDDING(DS_RNN):
         self.set_REPORT_MODELE(nom_modele)
         self.set_REPORT_LIBELLE("EMBEDDING")
         
-     def create_modele(self,Matrix=None,len_embedding_dict=0):
+     def create_modele(self,Matrix=None,vocab_size=0):
         model = Sequential()
-        model.add(Embedding(self.NUM_WORDS, self.EMBEDDING_DIM))
+        model.add(Embedding(vocab_size, self.EMBEDDING_DIM))
         model.add(Conv1D(filters=32, kernel_size=8, activation='relu'))
         model.add(GlobalAveragePooling1D())
         model.add(Flatten())
@@ -587,9 +619,9 @@ class RNN_EMBEDDING2(DS_RNN):
         self.set_REPORT_MODELE(nom_modele)
         self.set_REPORT_LIBELLE("EMBEDDING")
         
-     def create_modele(self,Matrix=None,len_embedding_dict=0):
+     def create_modele(self,Matrix=None,vocab_size=0):
         x  = input_layer = Input(shape=(self.MAXLEN,))
-        x  = Embedding(self.NUM_WORDS, self.EMBEDDING_DIM)(x)
+        x  = Embedding(vocab_size, self.EMBEDDING_DIM)(x)
         x  = Conv1D(filters=32, kernel_size=8, activation='relu')(x)
         x  = GlobalAveragePooling1D()(x)
         x  = Flatten()(x)
@@ -618,9 +650,9 @@ class RNN_STEMMER(DS_RNN):
         mots = Stemmer_sentence(mots,pays_langue)
         return mots   
         
-     def create_modele(self,Matrix=None,len_embedding_dict=0):
+     def create_modele(self,Matrix=None,vocab_size=0):
         model = Sequential()
-        model.add(Embedding(self.NUM_WORDS, self.EMBEDDING_DIM))
+        model.add(Embedding(vocab_size, self.EMBEDDING_DIM))
         model.add(Conv1D(filters=32, kernel_size=8, activation='relu'))
         model.add(GlobalAveragePooling1D())
         model.add(Flatten())
@@ -648,9 +680,9 @@ class RNN_LEMMER(DS_RNN):
         mots = Stemmer_sentence(mots,pays_langue)
         return mots   
         
-     def create_modele(self,Matrix=None,len_embedding_dict=0):
+     def create_modele(self,Matrix=None,vocab_size=0):
         model = Sequential()
-        model.add(Embedding(self.NUM_WORDS, self.EMBEDDING_DIM))
+        model.add(Embedding(vocab_size, self.EMBEDDING_DIM))
         model.add(Conv1D(filters=32, kernel_size=8, activation='relu'))
         model.add(GlobalAveragePooling1D())
         model.add(Flatten())
@@ -676,9 +708,9 @@ class RNN_GRU(DS_RNN):
         self.set_REPORT_MODELE(nom_modele)
         self.set_REPORT_LIBELLE("RNN_GRU")
         
-     def create_modele(self,Matrix=None,len_embedding_dict=0):
+     def create_modele(self,Matrix=None,vocab_size=0):
         model = Sequential()
-        model.add(Embedding(self.NUM_WORDS, self.EMBEDDING_DIM))
+        model.add(Embedding(vocab_size, self.EMBEDDING_DIM))
         print("NUM_WORDS", self.NUM_WORDS)
         print("EMBEDDING_DIM", self.EMBEDDING_DIM)
         model.add(RNN(GRUCell(128), return_sequences=True))
@@ -704,17 +736,58 @@ class RNN_SPACY(DS_RNN):
         self.set_REPORT_MODELE(nom_modele)
         self.set_REPORT_LIBELLE("EMBEDDING STEMMER")
         
-     def add_traitement(self,mots,pays_langue) :
-        mots = Stemmer_sentence(mots,pays_langue)
-        return mots   
+        # Chargement des modèles de langue avec un mappage spécifique
+        self.nlp_en = spacy.load('en_core_web_sm')
+        self.nlp_fr = spacy.load('fr_core_news_sm')
+        self.nlp_es = spacy.load('es_core_news_sm')
+        self.nlp_de = spacy.load('de_core_news_sm')
+        self.nlp_nl = spacy.load('nl_core_news_sm')
+        self.nlp_it = spacy.load('it_core_news_sm')
         
-     def create_modele(self,Matrix=None,len_embedding_dict=0):
+        # Fonction pour sélectionner le modèle SpaCy en fonction de la langue détectée
+     def get_spacy_model(self,lang):
+        if lang == 'fr':
+            return self.nlp_fr
+        elif lang == 'es':
+            return self.nlp_es
+        elif lang == 'en':
+            return self.nlp_en
+        elif lang == 'de':
+            return self.nlp_de
+        elif lang == 'nl':
+            return self.nlp_nl
+        elif lang == 'it':
+            return self.nlp_it
+        else:  # par défaut à l'anglais
+            return self.nlp_fr
+        
+     def preprocess_text(self,text):
+        try:
+            lang = detect(text)
+        except:
+            lang = "fr"  # Définit le français comme langue par défaut
+        #text = text.lower()
+        text = text.translate(str.maketrans('', '', string.punctuation))
+       # Sélection du modèle SpaCy approprié
+        nlp = self.get_spacy_model(lang)
+
+        # Traitement du texte avec spaCy
+        doc = nlp(text)
+
+        # Filtrage des tokens qui ne sont pas des stopwords et qui ne sont pas des signes de ponctuation
+        tokens_sans_stopwords = [token.text for token in doc if not token.is_stop and token.text not in string.punctuation]
+
+        return ' '.join(tokens_sans_stopwords).strip()  
+        
+     
+        
+     def create_modele(self,Matrix=None,vocab_size=0):
     
         print("output : ",self.EMBEDDING_DIM)
         #print("Matrix.shape = " ,Matrix.shape)
         print("len_embedding_dict = " ,len_embedding_dict)
         model = Sequential()
-        model.add(Embedding(len_embedding_dict, self.EMBEDDING_DIM, embeddings_initializer=Constant(Matrix), trainable=False))
+        model.add(Embedding(vocab_size, self.EMBEDDING_DIM, embeddings_initializer=Constant(Matrix), trainable=False))
         #model.add(Bidirectional(LSTM(64, dropout=0.25, recurrent_dropout=0.1)))
         #model.add(LSTM(128))
         #model.add(Conv1D(filters=64, kernel_size=8, activation='relu'))
