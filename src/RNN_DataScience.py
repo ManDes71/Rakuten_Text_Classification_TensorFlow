@@ -14,6 +14,7 @@ from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.stem.snowball import SnowballStemmer
 from  nltk.stem.snowball import FrenchStemmer,EnglishStemmer,GermanStemmer,ItalianStemmer,DutchStemmer,SpanishStemmer,ItalianStemmer
+from nltk.stem import WordNetLemmatizer
 
 
 from tensorflow.keras import Sequential,Input, Model
@@ -46,34 +47,34 @@ def unicode_to_ascii(s):
     return ''.join(c for c in unicodedata.normalize('NFD', s)
         if unicodedata.category(c) != 'Mn')
 
-def stemming(mots,porter_stemmer) :
-    sortie = []
-    for string in mots :
-        radical = porter_stemmer.stem(string)
-        if (radical not in sortie) : sortie.append(radical)
-    return sortie
+#def stemming(mots,porter_stemmer) :
+#    sortie = []
+#    for string in mots :
+#        radical = porter_stemmer.stem(string)
+#        if (radical not in sortie) : sortie.append(radical)
+#    return sortie
     
-def Stemmer_sentence(sentence,langue):
-    if langue == 'en':
-        porter_stemmer = EnglishStemmer()
-    elif langue == 'fr':
-        porter_stemmer = FrenchStemmer()
-    elif langue == 'de':
-        porter_stemmer = GermanStemmer()
-    elif langue == 'ca':
-        porter_stemmer = FrenchStemmer()
-    elif langue == 'nl':
-        porter_stemmer = DutchStemmer()
-    elif langue == 'it':
-        porter_stemmer = ItalianStemmer()
-    elif langue == 'es':
-        porter_stemmer = SpanishStemmer()
-    else:
-        porter_stemmer = FrenchStemmer()
-    
-    # Pour chaque mot de la phrase (dans l'ordre inverse)
-    sentence = stemming(sentence,porter_stemmer)
-    return sentence
+#def Stemmer_sentence(sentence,langue):
+#    if langue == 'en':
+#        porter_stemmer = EnglishStemmer()
+#    elif langue == 'fr':
+#        porter_stemmer = FrenchStemmer()
+#    elif langue == 'de':
+#        porter_stemmer = GermanStemmer()
+#    elif langue == 'ca':
+#        porter_stemmer = FrenchStemmer()
+#    elif langue == 'nl':
+#        porter_stemmer = DutchStemmer()
+#    elif langue == 'it':
+#        porter_stemmer = ItalianStemmer()
+#    elif langue == 'es':
+#        porter_stemmer = SpanishStemmer()
+#    else:
+#        porter_stemmer = FrenchStemmer()
+#    
+#    # Pour chaque mot de la phrase (dans l'ordre inverse)
+#    sentence = stemming(sentence,porter_stemmer)
+#    return sentence
     
 
 
