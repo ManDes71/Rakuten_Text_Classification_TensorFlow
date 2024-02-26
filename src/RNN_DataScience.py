@@ -12,12 +12,13 @@ from nltk.tokenize import PunktSentenceTokenizer
 from nltk.tokenize.regexp import RegexpTokenizer
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
+from nltk.stem.snowball import SnowballStemmer
 from  nltk.stem.snowball import FrenchStemmer,EnglishStemmer,GermanStemmer,ItalianStemmer,DutchStemmer,SpanishStemmer,ItalianStemmer
 
 
 from tensorflow.keras import Sequential,Input, Model
 from tensorflow.keras.layers import Embedding, Dense, GlobalAveragePooling1D, RNN, GRUCell
-from tensorflow.keras.layers import  Dropout ,Conv1D,Flatten,Bidirectional,LSTM,BatchNormalization
+from tensorflow.keras.layers import  Dropout ,Conv1D,Flatten,Bidirectional,BatchNormalization
 
 from keras.optimizers import Adam
 from tensorflow.keras import callbacks
@@ -25,6 +26,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC,LinearSVC
 from sklearn.metrics import f1_score
 
+import string
 import re
 import nltk
 import pickle
@@ -103,6 +105,8 @@ class DS_RNN(ds.DS_Model):
         self.EMBEDDING_DIM = 300
        
         nltk.download('punkt')
+        nltk.download('stopwords')
+        nltk.download('wordnet')
         
         self.nlp_fr = spacy.load('fr_core_news_md')
         self.nlp_en = spacy.load('en_core_web_md')
@@ -223,7 +227,7 @@ class DS_RNN(ds.DS_Model):
         mots = [mot for mot in mots if mot not in self.stop_words]
         return ' '.join(mots).strip()
         
-     def preprocess_text(text):
+     def preprocess_text(self,text):
         try:
             lang = detect(text)
         except:
@@ -247,12 +251,61 @@ class DS_RNN(ds.DS_Model):
         return tokens   
 
      def preprossessing_X(self,row):
+        # au chois on utilise la langue definie par notre soin , soit on laisse décider detect_lang
         pays_langue = row['PAYS_LANGUE']
         
         mots =self.preprocess_sentence(row['phrases'])
         mots = self.preprocess_text(mots)
         
         return {'phrases': mots, 'PAYS_LANGUE': pays_langue}
+        
+     def preprocess_stemmer(self,tokens):
+         # Détection de la langue
+        try:
+            lang = detect(' '.join(tokens))
+        except:
+            lang = "fr"  # Langue par défaut
+        # Adaptation des ressources linguistiques en fonction de la langue détectée
+        if lang == 'en':
+            stemmer = SnowballStemmer("english")
+        elif lang == 'es':
+            stemmer = SnowballStemmer("spanish")
+        elif lang == 'de':
+            stemmer = SnowballStemmer("german")
+        elif lang == 'nl':
+            stemmer = SnowballStemmer("dutch")
+        elif lang == 'it':
+            stemmer = SnowballStemmer("italian")
+        elif lang == 'ca':
+            stemmer = SnowballStemmer("french")
+        else:
+            stemmer = SnowballStemmer("french")
+
+        preprocessed_tokens = []
+        for token in tokens:
+            # Conversion en minuscules et suppression de la ponctuation
+            token = token.lower()
+            token = token.translate(str.maketrans('', '', string.punctuation))
+            # Stemmisation
+            stemmed_token = stemmer.stem(token)
+            preprocessed_tokens.append(stemmed_token)
+
+        return preprocessed_tokens
+        
+        
+     def preprocess_lemmer(self,tokens):
+        lemmatizer = WordNetLemmatizer()
+
+        preprocessed_tokens = []
+        for token in tokens:
+            # Conversion en minuscules et suppression de la ponctuation
+            token = token.lower()
+            token = token.translate(str.maketrans('', '', string.punctuation))
+            # Lemmatisation
+            lemmatized_token = lemmatizer.lemmatize(token)
+            preprocessed_tokens.append(lemmatized_token)
+
+        return preprocessed_tokens   
     
      def traiter_phrases(self):
         DESCRIP = []
@@ -345,7 +398,7 @@ class DS_RNN(ds.DS_Model):
         print("save y_train_avant.shape ",y_train_avant.shape)
         return X_train, X_test, y_train_avant, y_test_avant
     
-     def fit_modele(self,epochs,savefics=False,freeze=0,Train="None",spacy=False):
+     def fit_modele(self,epochs,savefics=False,freeze=0,Train="None",stemming=False,lemming=False,spacy=False):
     
         X_train,X_test,y_train,y_test = self.Train_Test_Split_(fic=Train)
         
@@ -379,6 +432,8 @@ class DS_RNN(ds.DS_Model):
         
         y_train,y_test,label_encoder = self.preprossessing_Y(y_train,y_test)
         
+       
+        
         tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=self.NUM_WORDS)
         # Mettre à jour le dictionnaire du tokenizer
         tokenizer.fit_on_texts(X_train)
@@ -386,6 +441,14 @@ class DS_RNN(ds.DS_Model):
         word2idx = tokenizer.word_index
         idx2word = tokenizer.index_word
         vocab_size = tokenizer.num_words
+        
+        if stemming:
+            X_train_preprocessed = [self.preprocess_stemmer(tokens) for tokens in X_train]
+            X_test_preprocessed = [self.preprocess_stemmer(tokens) for tokens in X_test]
+        elif lemming:
+            X_train_preprocessed = [self.preprocess_lemmer(tokens) for tokens in X_train]
+            X_test_preprocessed = [self.preprocess_lemmer(tokens) for tokens in X_test]
+        
 
         X_train = tokenizer.texts_to_sequences(X_train)
         X_test = tokenizer.texts_to_sequences(X_test)
@@ -504,7 +567,7 @@ class RNN_EMBEDDING(DS_RNN):
         model.add(GlobalAveragePooling1D())
         model.add(Flatten())
         model.add(Dense(256, activation='relu'))
-        #model.add(BatchNormalization())
+        model.add(BatchNormalization())
         model.add(Dropout(0.4))
         model.add(Dense(27, activation='softmax'))
         model.compile(optimizer=Adam(learning_rate=1e-3), loss='categorical_crossentropy', metrics=['accuracy'])    
@@ -561,7 +624,7 @@ class RNN_STEMMER(DS_RNN):
         model.add(GlobalAveragePooling1D())
         model.add(Flatten())
         model.add(Dense(256, activation='relu'))
-        #model.add(BatchNormalization())
+        model.add(BatchNormalization())
         model.add(Dropout(0.4))
         model.add(Dense(27, activation='softmax'))
         model.compile(optimizer=Adam(learning_rate=1e-3), loss='categorical_crossentropy', metrics=['accuracy'])    
@@ -569,6 +632,36 @@ class RNN_STEMMER(DS_RNN):
         self.set_model(model)
 
         return model   
+        
+class RNN_LEMMER(DS_RNN):     
+
+     def __init__(self, nom_modele):
+        super().__init__(nom_modele)
+            
+        self.__nom_modele = nom_modele
+        self.set_REPORT_ID("EMBED3")
+        self.set_REPORT_MODELE(nom_modele)
+        self.set_REPORT_LIBELLE("EMBEDDING LEMMER")
+        
+     def add_traitement(self,mots,pays_langue) :
+        mots = Stemmer_sentence(mots,pays_langue)
+        return mots   
+        
+     def create_modele(self,Matrix=None,len_embedding_dict=0):
+        model = Sequential()
+        model.add(Embedding(self.NUM_WORDS, self.EMBEDDING_DIM))
+        model.add(Conv1D(filters=32, kernel_size=8, activation='relu'))
+        model.add(GlobalAveragePooling1D())
+        model.add(Flatten())
+        model.add(Dense(256, activation='relu'))
+        model.add(BatchNormalization())
+        model.add(Dropout(0.4))
+        model.add(Dense(27, activation='softmax'))
+        model.compile(optimizer=Adam(learning_rate=1e-3), loss='categorical_crossentropy', metrics=['accuracy'])    
+        
+        self.set_model(model)
+
+        return model           
         
 
  
