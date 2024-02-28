@@ -18,7 +18,7 @@ from nltk.stem import WordNetLemmatizer
 
 
 from tensorflow.keras import Sequential,Input, Model
-from tensorflow.keras.layers import Embedding, Dense, GlobalAveragePooling1D, RNN, GRUCell
+from tensorflow.keras.layers import Embedding, Dense, GlobalAveragePooling1D, RNN, GRUCell,GRU
 from tensorflow.keras.layers import  Dropout ,Conv1D,Flatten,Bidirectional,BatchNormalization
 
 from keras.optimizers import Adam
@@ -109,13 +109,13 @@ class DS_RNN(ds.DS_Model):
         nltk.download('stopwords')
         nltk.download('wordnet')
         
-        self.nlp_fr = spacy.load('fr_core_news_md')
-        self.nlp_en = spacy.load('en_core_web_md')
-        self.nlp_de = spacy.load('de_core_news_md')
-        self.nlp_es = spacy.load('es_core_news_md')
-        self.nlp_it = spacy.load('it_core_news_md')
-        self.nlp_nl = spacy.load('nl_core_news_md')
-        self.nlp_ca = spacy.load('ca_core_news_md')
+        self.nlp_fr = spacy.load('fr_core_news_sm')
+        self.nlp_en = spacy.load('en_core_web_sm')
+        self.nlp_de = spacy.load('de_core_news_sm')
+        self.nlp_es = spacy.load('es_core_news_sm')
+        self.nlp_it = spacy.load('it_core_news_sm')
+        self.nlp_nl = spacy.load('nl_core_news_sm')
+        self.nlp_ca = spacy.load('ca_core_news_sm')
       
      def get_df_feats(self):
         return self.__df_feats
@@ -268,19 +268,27 @@ class DS_RNN(ds.DS_Model):
             lang = "fr"  # Langue par défaut
         # Adaptation des ressources linguistiques en fonction de la langue détectée
         if lang == 'en':
+            stop_words = set(stopwords.words('english'))
             stemmer = SnowballStemmer("english")
         elif lang == 'es':
+            stop_words = set(stopwords.words('spanish'))
             stemmer = SnowballStemmer("spanish")
         elif lang == 'de':
+            stop_words = set(stopwords.words('german'))
             stemmer = SnowballStemmer("german")
         elif lang == 'nl':
+            stop_words = set(stopwords.words('dutch'))
             stemmer = SnowballStemmer("dutch")
         elif lang == 'it':
+            stop_words = set(stopwords.words('italian'))
             stemmer = SnowballStemmer("italian")
         elif lang == 'ca':
+            stop_words = set(stopwords.words('french'))
             stemmer = SnowballStemmer("french")
         else:
+            stop_words = set(stopwords.words('french'))
             stemmer = SnowballStemmer("french")
+
 
         preprocessed_tokens = []
         for token in tokens:
@@ -429,27 +437,11 @@ class DS_RNN(ds.DS_Model):
         
         embedding_dict = {}
         embedding_matrix = []
-        #print(X_train['PAYS_LANGUE'][:5])
-        #print(X_train['designation'][:5])
+      
         print("self.EMBEDDING_DIM",self.EMBEDDING_DIM)  
-        #if spacy:
-        #    print("creation dictionnaire") 
-        #    for lang, sentence in zip(X_train['PAYS_LANGUE'],X_train['phrases']):  # Remplacez 'your_dataset' par votre propre ensemble de données
-        #        #print(lang, sentence)
-        #        for word in sentence.split():
-        #            #print(word)
-        #            if word not in embedding_dict:
-        #                embedding_dict[word] = self.get_vector(word, lang)
-        #    print("longueur dictionnaire",len(embedding_dict))            
-        #    print("creation matrice") 
-        #    embedding_matrix = np.zeros((len(embedding_dict)+1, self.EMBEDDING_DIM))  # Remplacez 'EMBEDDING_DIM' par la dimension de votre embedding
-        #    print("embedding_matrix.shape = " ,embedding_matrix.shape)
-        #    for i, word in enumerate(embedding_dict.keys()):
-        #        embedding_vector = embedding_dict.get(word)
-        #        if embedding_vector is not None:
-        #            embedding_matrix[i] = embedding_vector            
+          
         print("suite")
-        #print("embedding_matrix.shape = " ,embedding_matrix.shape)
+       
         X_train = X_train['phrases']
         X_test = X_test['phrases']
         
@@ -595,13 +587,14 @@ class RNN_EMBEDDING(DS_RNN):
         
      def create_modele(self,Matrix=None,vocab_size=0):
         model = Sequential()
-        model.add(Embedding(vocab_size, self.EMBEDDING_DIM))
+        model.add(Embedding(vocab_size, self.EMBEDDING_DIM, input_length=self.MAXLEN))
         model.add(Conv1D(filters=32, kernel_size=8, activation='relu'))
+        # Ajout d'une couche GRU
+        model.add(GRU(128, return_sequences=True)) 
         model.add(GlobalAveragePooling1D())
-        model.add(Flatten())
         model.add(Dense(256, activation='relu'))
         model.add(BatchNormalization())
-        model.add(Dropout(0.4))
+        model.add(Dropout(0.5))  # Augmentation du taux de dropout pour réduire le surajustement
         model.add(Dense(27, activation='softmax'))
         model.compile(optimizer=Adam(learning_rate=1e-3), loss='categorical_crossentropy', metrics=['accuracy'])    
         
@@ -626,13 +619,14 @@ class RNN_STEMMER(DS_RNN):
         
      def create_modele(self,Matrix=None,vocab_size=0):
         model = Sequential()
-        model.add(Embedding(vocab_size, self.EMBEDDING_DIM))
+        model.add(Embedding(vocab_size, self.EMBEDDING_DIM, input_length=self.MAXLEN))
         model.add(Conv1D(filters=32, kernel_size=8, activation='relu'))
+        # Ajout d'une couche GRU
+        model.add(GRU(128, return_sequences=True)) 
         model.add(GlobalAveragePooling1D())
-        model.add(Flatten())
         model.add(Dense(256, activation='relu'))
         model.add(BatchNormalization())
-        model.add(Dropout(0.4))
+        model.add(Dropout(0.5))  # Augmentation du taux de dropout pour réduire le surajustement
         model.add(Dense(27, activation='softmax'))
         model.compile(optimizer=Adam(learning_rate=1e-3), loss='categorical_crossentropy', metrics=['accuracy'])    
         
@@ -656,13 +650,14 @@ class RNN_LEMMER(DS_RNN):
         
      def create_modele(self,Matrix=None,vocab_size=0):
         model = Sequential()
-        model.add(Embedding(vocab_size, self.EMBEDDING_DIM))
+        model.add(Embedding(vocab_size, self.EMBEDDING_DIM, input_length=self.MAXLEN))
         model.add(Conv1D(filters=32, kernel_size=8, activation='relu'))
+        # Ajout d'une couche GRU
+        model.add(GRU(128, return_sequences=True)) 
         model.add(GlobalAveragePooling1D())
-        model.add(Flatten())
         model.add(Dense(256, activation='relu'))
         model.add(BatchNormalization())
-        model.add(Dropout(0.4))
+        model.add(Dropout(0.5))  # Augmentation du taux de dropout pour réduire le surajustement
         model.add(Dense(27, activation='softmax'))
         model.compile(optimizer=Adam(learning_rate=1e-3), loss='categorical_crossentropy', metrics=['accuracy'])    
         
@@ -760,17 +755,14 @@ class RNN_SPACY(DS_RNN):
         print("output : ",self.EMBEDDING_DIM)
         print("vocab_size = " ,vocab_size)
         model = Sequential()
-        #model.add(Embedding(vocab_size, self.EMBEDDING_DIM, embeddings_initializer=Constant(Matrix), trainable=False))
-        #model.add(Bidirectional(LSTM(64, dropout=0.25, recurrent_dropout=0.1)))
-        #model.add(LSTM(128))
-        #model.add(Conv1D(filters=64, kernel_size=8, activation='relu'))
-        model.add(Embedding(vocab_size, self.EMBEDDING_DIM))
+        model.add(Embedding(vocab_size, self.EMBEDDING_DIM, input_length=self.MAXLEN))
         model.add(Conv1D(filters=32, kernel_size=8, activation='relu'))
+        # Ajout d'une couche GRU
+        model.add(GRU(128, return_sequences=True)) 
         model.add(GlobalAveragePooling1D())
-        model.add(Flatten())
         model.add(Dense(256, activation='relu'))
         model.add(BatchNormalization())
-        model.add(Dropout(0.4))
+        model.add(Dropout(0.5))  # Augmentation du taux de dropout pour réduire le surajustement
         model.add(Dense(27, activation='softmax'))
         model.compile(optimizer=Adam(learning_rate=1e-3), loss='categorical_crossentropy', metrics=['accuracy'])   
         
