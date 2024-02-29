@@ -47,35 +47,6 @@ def unicode_to_ascii(s):
     return ''.join(c for c in unicodedata.normalize('NFD', s)
         if unicodedata.category(c) != 'Mn')
 
-#def stemming(mots,porter_stemmer) :
-#    sortie = []
-#    for string in mots :
-#        radical = porter_stemmer.stem(string)
-#        if (radical not in sortie) : sortie.append(radical)
-#    return sortie
-    
-#def Stemmer_sentence(sentence,langue):
-#    if langue == 'en':
-#        porter_stemmer = EnglishStemmer()
-#    elif langue == 'fr':
-#        porter_stemmer = FrenchStemmer()
-#    elif langue == 'de':
-#        porter_stemmer = GermanStemmer()
-#    elif langue == 'ca':
-#        porter_stemmer = FrenchStemmer()
-#    elif langue == 'nl':
-#        porter_stemmer = DutchStemmer()
-#    elif langue == 'it':
-#        porter_stemmer = ItalianStemmer()
-#    elif langue == 'es':
-#        porter_stemmer = SpanishStemmer()
-#    else:
-#        porter_stemmer = FrenchStemmer()
-#    
-#    # Pour chaque mot de la phrase (dans l'ordre inverse)
-#    sentence = stemming(sentence,porter_stemmer)
-#    return sentence
-    
 
 
     
@@ -365,9 +336,6 @@ class DS_RNN(ds.DS_Model):
         print("type((X_train['designation'])",type(X_train['designation']))
         tokenizer.fit_on_texts(X_train['designation'])
         
-        #word2idx = tokenizer.word_index
-        #idx2word = tokenizer.index_word
-        #vocab_size = tokenizer.num_words
       
         X_test = tokenizer.texts_to_sequences(X_test)
         print("X_test 2 = ",X_test)
@@ -398,7 +366,6 @@ class DS_RNN(ds.DS_Model):
             X_test = ds.load_ndarray(self.__nom_modele+'_X_test')
             y_train_avant = ds.load_ndarray(self.__nom_modele+'_y_train')
             y_test_avant = ds.load_ndarray(self.__nom_modele+'_y_test')
-            #label_encoder = ds.load_ndarray(self.__nom_modele+'_label_encoder')
             print("load y_train_avant.shape ",y_train_avant.shape)
             
             return X_train, X_test, y_train_avant, y_test_avant
@@ -472,7 +439,6 @@ class DS_RNN(ds.DS_Model):
         
         word2idx = tokenizer.word_index
         idx2word = tokenizer.index_word
-        #vocab_size = tokenizer.num_words
         vocab_size = len(tokenizer.word_index) + 1  # Taille du vocabulaire
 
         X_train = tokenizer.texts_to_sequences(X_train)
@@ -481,7 +447,6 @@ class DS_RNN(ds.DS_Model):
         X_train = tf.keras.preprocessing.sequence.pad_sequences(X_train, maxlen=self.MAXLEN, padding='post', truncating='post')
         X_test = tf.keras.preprocessing.sequence.pad_sequences(X_test, maxlen=self.MAXLEN, padding='post', truncating='post')
                
-        #print( "input : ",len(embedding_dict)) 
         print( "vocab_size : ",vocab_size)
         model = self.create_modele(embedding_matrix,vocab_size)    
         
@@ -666,34 +631,6 @@ class RNN_LEMMER(DS_RNN):
         return model           
         
 
- 
-class RNN_GRU(DS_RNN):     
-
-     def __init__(self, nom_modele):
-        super().__init__(nom_modele)
-            
-        self.__nom_modele = nom_modele
-        self.set_REPORT_ID("GRU")
-        self.set_REPORT_MODELE(nom_modele)
-        self.set_REPORT_LIBELLE("RNN_GRU")
-        
-     def create_modele(self,Matrix=None,vocab_size=0):
-        model = Sequential()
-        model.add(Embedding(vocab_size, self.EMBEDDING_DIM))
-        print("NUM_WORDS", vocab_size)
-        print("EMBEDDING_DIM", self.EMBEDDING_DIM)
-        model.add(RNN(GRUCell(128), return_sequences=True))
-        model.add(Dropout(0.5))
-        model.add(GlobalAveragePooling1D())
-        model.add(Dense(256, activation='relu'))
-        model.add(Dropout(0.5))
-        model.add(Dense(27, activation='softmax'))
-        model.compile(optimizer=Adam(learning_rate=1e-3), loss='categorical_crossentropy', metrics=['accuracy'])    
-        
-        self.set_model(model)
-
-        return model  
-     
 
 class RNN_SPACY(DS_RNN):     
 
@@ -770,69 +707,3 @@ class RNN_SPACY(DS_RNN):
 
         return model           
 
-"""
-class RNN_CAMENBERT(DS_RNN):     
-
-     def __init__(self, nom_modele):
-        super().__init__(nom_modele)
-            
-        self.__nom_modele = nom_modele
-        self.set_REPORT_ID("EMBED2")
-        self.set_REPORT_MODELE(nom_modele)
-        self.set_REPORT_LIBELLE("EMBEDDING STEMMER")
-        
-        self.tokenizer = CamembertTokenizer.from_pretrained("camembert-base")
-        self.camembert_model = TFCamembertForSequenceClassification.from_pretrained("camembert-base")
-        
-     def add_traitement(self,mots,pays_langue) :
-        mots = Stemmer_sentence(mots,pays_langue)
-        return mots   
-        
-     def create_modele(self,Matrix=None,len_embedding_dict=0):
-        model = Sequential()
-        model.add(self.camembert_model) 
-        model.add(LSTM(128))
-        model.add(Dense(64, activation='relu'))
-        model.add(Dropout(0.4))
-        model.add(Dense(27, activation='softmax'))
-        model.compile(optimizer=Adam(learning_rate=1e-3), loss='categorical_crossentropy', metrics=['accuracy'])    
-        
-        self.set_model(model)
-
-        return model   
-  
-     def fit_modele(self,epochs,savefics=False,freeze=0,spacy=False):
-        
-        #X_train_avant, X_test_avant, y_train, y_test = ds.DS_Model.Train_Test_Split_(self)
-        X_train_avant, X_test_avant, y_train, y_test = self.Train_Test_Split_()
-        
-        
-        X_train = X_train_avant['designation']
-        X_test = X_test_avant['designation']
-        
-        y_train,y_test,label_encoder = self.preprossessing_Y(y_train,y_test)
-        
-        print(X_train[:5])
-        print(y_train[:5])
-        
-        
-        train_encodings = self.tokenizer(list(X_train), truncation=True, padding=True, max_length=self.MAXLEN)
-        test_encodings = self.tokenizer(list(X_test), truncation=True, padding=True, max_length=self.MAXLEN)
-        
-        model = self.create_modele()    
-        
-        lr_plateau = callbacks.ReduceLROnPlateau(monitor = 'val_loss',
-                            patience=4,
-                            factor=0.5,
-                            verbose=1,
-                            mode='min')
-        
-        training_history = model.fit(train_encodings, y_train,batch_size = 32, epochs=epochs, validation_data = [test_encodings, y_test],callbacks=[lr_plateau])
-
-        train_acc = training_history.history['accuracy']
-        val_acc = training_history.history['val_accuracy']
-        tloss = training_history.history['loss']
-        tvalloss=training_history.history['val_loss']
-        
-        return train_acc,val_acc,tloss,tvalloss
-"""    
