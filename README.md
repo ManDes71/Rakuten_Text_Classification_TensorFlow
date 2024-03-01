@@ -892,7 +892,7 @@ ds.plot_fit(train_acc,val_acc,tloss,tvalloss)
 
 
     
-![png](output_35_0.png)
+![png](/images/ReadMe_ML_files/output_35_0.png)
     
 
 
@@ -1481,7 +1481,7 @@ ds.show_confusion_matrix(y_orig, y_pred)
 
 
     
-![png](output_41_0.png)
+![png](/images/ReadMe_ML_files/output_41_0.png)
     
 
 
@@ -1579,7 +1579,7 @@ ds.plot_fit(train_acc,val_acc,tloss,tvalloss)
 
 
     
-![png](output_46_0.png)
+![png](/images/ReadMe_ML_files/output_46_0.png)
     
 
 
@@ -2167,7 +2167,7 @@ ds.show_confusion_matrix(y_orig, y_pred)
 
 
     
-![png](output_52_0.png)
+![png](/images/ReadMe_ML_files/output_52_0.png)
     
 
 
@@ -2291,7 +2291,7 @@ ds.plot_fit(train_acc,val_acc,tloss,tvalloss)
 
 
     
-![png](output_58_0.png)
+![png](/images/ReadMe_ML_files/output_58_0.png)
     
 
 
@@ -2879,7 +2879,7 @@ ds.show_confusion_matrix(y_orig, y_pred)
 
 
     
-![png](output_64_0.png)
+![png](/images/ReadMe_ML_files/output_64_0.png)
     
 
 
