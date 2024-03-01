@@ -193,7 +193,7 @@ ds.plot_fit(train_acc,val_acc,tloss,tvalloss)
 
 
     
-![png](output_23_0.png)
+![png](/images/ReadMe_ML_files/output_23_0.png)
     
 
 
