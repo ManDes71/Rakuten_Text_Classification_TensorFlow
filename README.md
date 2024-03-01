@@ -1635,24 +1635,6 @@ df_pred
 ```
 
 
-
-
-
-  <div id="df-dff2f148-1ed2-4fb9-ac57-d04876197cab" class="colab-df-container">
-    <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -2009,13 +1991,1365 @@ ds.show_confusion_matrix(y_orig, y_pred)
 ```python
 
 ```
+# Modèle 5 : Word2Vec
+
+![png](/images/ReadMe_ML_files/output_44_0.png)
+    
+
+
+
+### Rapport de classification
 
 
 ```python
 
+y_test_original=y_test
+# On évalue le niveau de précision de notre prédiction.
+print("Précision de la prédiction:", accuracy_score(y_test_original, test_pred_original)*100, '%')
+
+print("Evaluation détaillée de la Classification par RDF :\n \n" ,
+      (classification_report(y_test_original, test_pred_original)))
 ```
+
+    Précision de la prédiction: 76.75459255770136 %
+    Evaluation détaillée de la Classification par RDF :
+     
+                   precision    recall  f1-score   support
+    
+              10       0.42      0.40      0.41       612
+              40       0.66      0.58      0.62       521
+              50       0.79      0.74      0.77       357
+              60       0.90      0.85      0.88       161
+            1140       0.68      0.76      0.72       539
+            1160       0.78      0.84      0.81       786
+            1180       0.61      0.47      0.53       146
+            1280       0.67      0.64      0.65       961
+            1281       0.58      0.40      0.48       424
+            1300       0.87      0.92      0.89       974
+            1301       0.88      0.88      0.88       169
+            1302       0.72      0.73      0.73       507
+            1320       0.77      0.70      0.73       672
+            1560       0.79      0.78      0.79      1013
+            1920       0.87      0.92      0.89       841
+            1940       0.76      0.87      0.81       137
+            2060       0.76      0.77      0.76      1029
+            2220       0.90      0.82      0.86       170
+            2280       0.58      0.72      0.64       942
+            2403       0.73      0.70      0.72       986
+            2462       0.73      0.68      0.70       306
+            2522       0.87      0.91      0.89       991
+            2582       0.74      0.66      0.70       462
+            2583       0.96      0.97      0.97      2047
+            2585       0.75      0.75      0.75       525
+            2705       0.69      0.59      0.64       517
+            2905       0.92      0.99      0.95       189
+    
+        accuracy                           0.77     16984
+       macro avg       0.75      0.74      0.75     16984
+    weighted avg       0.77      0.77      0.77     16984
+    
+    
 
 
 ```python
+df_test = pd.DataFrame({
+    'tokenized': X_test,  # Assurez-vous que cela reflète ce que vous voulez montrer; ici, 'X_test' est utilisé comme exemple
+    'prdtypecode': y_test,
+    'predict': test_pred_original
+})
 
+df_test.head()
 ```
+### Tableau des 5 classes les plus prédites pour chaque classe réélle
+
+
+```python
+for c in Lcat:
+    print(c,'   ------   ', catdict[c] )
+    print(df_test[df_test['prdtypecode']==c]['predict'].value_counts(normalize=True)[:5])
+```
+
+    10    ------    livres
+    predict
+    10      0.403595
+    2280    0.215686
+    2403    0.148693
+    2705    0.083333
+    40      0.035948
+    Name: proportion, dtype: float64
+    40    ------    jeux video pour pc et consoles
+    predict
+    40      0.579655
+    10      0.069098
+    1160    0.055662
+    2280    0.051823
+    50      0.044146
+    Name: proportion, dtype: float64
+    50    ------     accesoires jeux video
+    predict
+    50      0.742297
+    2462    0.072829
+    40      0.033613
+    1140    0.028011
+    1280    0.028011
+    Name: proportion, dtype: float64
+    60    ------    consoles de jeux video
+    predict
+    60      0.850932
+    2462    0.080745
+    50      0.024845
+    40      0.012422
+    2905    0.006211
+    Name: proportion, dtype: float64
+    1140    ------    produits derives “geeks” et figurines
+    predict
+    1140    0.762523
+    1160    0.038961
+    1280    0.031540
+    2280    0.020408
+    2403    0.018553
+    Name: proportion, dtype: float64
+    1160    ------    cartes collectionables
+    predict
+    1160    0.843511
+    2280    0.036896
+    40      0.019084
+    10      0.015267
+    2403    0.013995
+    Name: proportion, dtype: float64
+    1180    ------    figurines collectionables pour jeux de societe
+    predict
+    1180    0.465753
+    1160    0.082192
+    40      0.075342
+    1281    0.054795
+    1140    0.054795
+    Name: proportion, dtype: float64
+    1280    ------    jouets, peluches, poupees
+    predict
+    1280    0.637877
+    1300    0.083247
+    1140    0.073881
+    1302    0.042664
+    1281    0.027055
+    Name: proportion, dtype: float64
+    1281    ------    jeux de societe/cartes
+    predict
+    1281    0.403302
+    1280    0.275943
+    1160    0.037736
+    10      0.035377
+    1302    0.033019
+    Name: proportion, dtype: float64
+    1300    ------    Petites voitures (jouets) et maquettes
+    predict
+    1300    0.919918
+    1280    0.019507
+    2280    0.015400
+    10      0.007187
+    1140    0.007187
+    Name: proportion, dtype: float64
+    1301    ------    accesoires pour petis enfants/bebes et mobilier de jeu (flechettes, billard, babyfoot)
+    predict
+    1301    0.881657
+    1302    0.023669
+    1281    0.017751
+    1320    0.017751
+    1560    0.017751
+    Name: proportion, dtype: float64
+    1302    ------    jeux d'exterieur
+    predict
+    1302    0.733728
+    1280    0.082840
+    2583    0.027613
+    2582    0.023669
+    1320    0.021696
+    Name: proportion, dtype: float64
+    1320    ------    sacs pour femmes et accesore petite enfance
+    predict
+    1320    0.697917
+    2060    0.058036
+    1280    0.052083
+    1560    0.028274
+    1920    0.022321
+    Name: proportion, dtype: float64
+    1560    ------    Mobilier et produits decoration/rangement pour la maison
+    predict
+    1560    0.782823
+    2060    0.071076
+    1920    0.044423
+    2582    0.036525
+    2585    0.018756
+    Name: proportion, dtype: float64
+    1920    ------    linge de maison (cousins, rideaux, serviettes, nappes, draps)
+    predict
+    1920    0.916766
+    2060    0.038050
+    1320    0.015458
+    1560    0.014269
+    2582    0.003567
+    Name: proportion, dtype: float64
+    1940    ------    nouriture (cafes,infusions,conserves, epices,etc)
+    predict
+    1940    0.868613
+    2522    0.036496
+    2280    0.021898
+    1160    0.014599
+    1320    0.014599
+    Name: proportion, dtype: float64
+    2060    ------    lampes et accesoires decoration pour maison
+    predict
+    2060    0.765792
+    1560    0.083576
+    1920    0.036929
+    1302    0.019436
+    2585    0.015549
+    Name: proportion, dtype: float64
+    2220    ------    accesoires mascots/pets
+    predict
+    2220    0.817647
+    2060    0.023529
+    1940    0.023529
+    1280    0.023529
+    2583    0.017647
+    Name: proportion, dtype: float64
+    2280    ------    magazines
+    predict
+    2280    0.720807
+    10      0.080679
+    2403    0.074310
+    2705    0.039278
+    1160    0.019108
+    Name: proportion, dtype: float64
+    2403    ------    livres et bds
+    predict
+    2403    0.699797
+    2280    0.154158
+    10      0.057809
+    2705    0.026369
+    1140    0.014199
+    Name: proportion, dtype: float64
+    2462    ------    consoles de jeux video et jeux videos
+    predict
+    2462    0.676471
+    50      0.071895
+    1281    0.049020
+    40      0.049020
+    60      0.035948
+    Name: proportion, dtype: float64
+    2522    ------    produits de papeterie et rangement bureau
+    predict
+    2522    0.907164
+    2585    0.012109
+    2280    0.010091
+    2060    0.008073
+    1160    0.007064
+    Name: proportion, dtype: float64
+    2582    ------    mobilier d'exterieur et accesoires (parasols,pots,tentes,etc)
+    predict
+    2582    0.664502
+    1560    0.086580
+    2060    0.071429
+    2585    0.060606
+    2583    0.028139
+    Name: proportion, dtype: float64
+    2583    ------    accesoires de piscine
+    predict
+    2583    0.973131
+    2585    0.007328
+    2060    0.002931
+    1320    0.002443
+    2582    0.002443
+    Name: proportion, dtype: float64
+    2585    ------    outillage et accesoires pour jardinage
+    predict
+    2585    0.752381
+    2060    0.041905
+    1560    0.040000
+    2582    0.038095
+    2583    0.030476
+    Name: proportion, dtype: float64
+    2705    ------    bds et livres
+    predict
+    2705    0.593810
+    10      0.160542
+    2280    0.137331
+    2403    0.034816
+    1160    0.021277
+    Name: proportion, dtype: float64
+    2905    ------    Jeu En téléchargement
+    predict
+    2905    0.989418
+    1281    0.010582
+    Name: proportion, dtype: float64
+    
+
+### Tableau des 5 classes les plus prédites pour chaque classe réélle avec libellés
+
+
+```python
+for c in Lcat:
+    print(c,'   ------   ', catdict[c] )
+    s=df_cross.loc[c].sort_values(ascending=False)[:5]
+    for index, value in s.items():
+        print(f"  : {index},  : {np.round(value*100,2)} % , {catdict[index]}")
+```
+
+    10    ------    livres
+      : 10,  : 40.36 % , livres
+      : 2280,  : 21.57 % , magazines
+      : 2403,  : 14.87 % , livres et bds
+      : 2705,  : 8.33 % , bds et livres
+      : 40,  : 3.59 % , jeux video pour pc et consoles
+    40    ------    jeux video pour pc et consoles
+      : 40,  : 57.97 % , jeux video pour pc et consoles
+      : 10,  : 6.91 % , livres
+      : 1160,  : 5.57 % , cartes collectionables
+      : 2280,  : 5.18 % , magazines
+      : 50,  : 4.41 % ,  accesoires jeux video
+    50    ------     accesoires jeux video
+      : 50,  : 74.23 % ,  accesoires jeux video
+      : 2462,  : 7.28 % , consoles de jeux video et jeux videos
+      : 40,  : 3.36 % , jeux video pour pc et consoles
+      : 1140,  : 2.8 % , produits derives “geeks” et figurines
+      : 1280,  : 2.8 % , jouets, peluches, poupees
+    60    ------    consoles de jeux video
+      : 60,  : 85.09 % , consoles de jeux video
+      : 2462,  : 8.07 % , consoles de jeux video et jeux videos
+      : 50,  : 2.48 % ,  accesoires jeux video
+      : 40,  : 1.24 % , jeux video pour pc et consoles
+      : 2905,  : 0.62 % , Jeu En téléchargement
+    1140    ------    produits derives “geeks” et figurines
+      : 1140,  : 76.25 % , produits derives “geeks” et figurines
+      : 1160,  : 3.9 % , cartes collectionables
+      : 1280,  : 3.15 % , jouets, peluches, poupees
+      : 2280,  : 2.04 % , magazines
+      : 2403,  : 1.86 % , livres et bds
+    1160    ------    cartes collectionables
+      : 1160,  : 84.35 % , cartes collectionables
+      : 2280,  : 3.69 % , magazines
+      : 40,  : 1.91 % , jeux video pour pc et consoles
+      : 10,  : 1.53 % , livres
+      : 1140,  : 1.4 % , produits derives “geeks” et figurines
+    1180    ------    figurines collectionables pour jeux de societe
+      : 1180,  : 46.58 % , figurines collectionables pour jeux de societe
+      : 1160,  : 8.22 % , cartes collectionables
+      : 40,  : 7.53 % , jeux video pour pc et consoles
+      : 1140,  : 5.48 % , produits derives “geeks” et figurines
+      : 1280,  : 5.48 % , jouets, peluches, poupees
+    1280    ------    jouets, peluches, poupees
+      : 1280,  : 63.79 % , jouets, peluches, poupees
+      : 1300,  : 8.32 % , Petites voitures (jouets) et maquettes
+      : 1140,  : 7.39 % , produits derives “geeks” et figurines
+      : 1302,  : 4.27 % , jeux d'exterieur
+      : 1281,  : 2.71 % , jeux de societe/cartes
+    1281    ------    jeux de societe/cartes
+      : 1281,  : 40.33 % , jeux de societe/cartes
+      : 1280,  : 27.59 % , jouets, peluches, poupees
+      : 1160,  : 3.77 % , cartes collectionables
+      : 10,  : 3.54 % , livres
+      : 1302,  : 3.3 % , jeux d'exterieur
+    1300    ------    Petites voitures (jouets) et maquettes
+      : 1300,  : 91.99 % , Petites voitures (jouets) et maquettes
+      : 1280,  : 1.95 % , jouets, peluches, poupees
+      : 2280,  : 1.54 % , magazines
+      : 1140,  : 0.72 % , produits derives “geeks” et figurines
+      : 10,  : 0.72 % , livres
+    1301    ------    accesoires pour petis enfants/bebes et mobilier de jeu (flechettes, billard, babyfoot)
+      : 1301,  : 88.17 % , accesoires pour petis enfants/bebes et mobilier de jeu (flechettes, billard, babyfoot)
+      : 1302,  : 2.37 % , jeux d'exterieur
+      : 1560,  : 1.78 % , Mobilier et produits decoration/rangement pour la maison
+      : 1320,  : 1.78 % , sacs pour femmes et accesore petite enfance
+      : 1281,  : 1.78 % , jeux de societe/cartes
+    1302    ------    jeux d'exterieur
+      : 1302,  : 73.37 % , jeux d'exterieur
+      : 1280,  : 8.28 % , jouets, peluches, poupees
+      : 2583,  : 2.76 % , accesoires de piscine
+      : 2582,  : 2.37 % , mobilier d'exterieur et accesoires (parasols,pots,tentes,etc)
+      : 1320,  : 2.17 % , sacs pour femmes et accesore petite enfance
+    1320    ------    sacs pour femmes et accesore petite enfance
+      : 1320,  : 69.79 % , sacs pour femmes et accesore petite enfance
+      : 2060,  : 5.8 % , lampes et accesoires decoration pour maison
+      : 1280,  : 5.21 % , jouets, peluches, poupees
+      : 1560,  : 2.83 % , Mobilier et produits decoration/rangement pour la maison
+      : 1920,  : 2.23 % , linge de maison (cousins, rideaux, serviettes, nappes, draps)
+    1560    ------    Mobilier et produits decoration/rangement pour la maison
+      : 1560,  : 78.28 % , Mobilier et produits decoration/rangement pour la maison
+      : 2060,  : 7.11 % , lampes et accesoires decoration pour maison
+      : 1920,  : 4.44 % , linge de maison (cousins, rideaux, serviettes, nappes, draps)
+      : 2582,  : 3.65 % , mobilier d'exterieur et accesoires (parasols,pots,tentes,etc)
+      : 2585,  : 1.88 % , outillage et accesoires pour jardinage
+    1920    ------    linge de maison (cousins, rideaux, serviettes, nappes, draps)
+      : 1920,  : 91.68 % , linge de maison (cousins, rideaux, serviettes, nappes, draps)
+      : 2060,  : 3.8 % , lampes et accesoires decoration pour maison
+      : 1320,  : 1.55 % , sacs pour femmes et accesore petite enfance
+      : 1560,  : 1.43 % , Mobilier et produits decoration/rangement pour la maison
+      : 2582,  : 0.36 % , mobilier d'exterieur et accesoires (parasols,pots,tentes,etc)
+    1940    ------    nouriture (cafes,infusions,conserves, epices,etc)
+      : 1940,  : 86.86 % , nouriture (cafes,infusions,conserves, epices,etc)
+      : 2522,  : 3.65 % , produits de papeterie et rangement bureau
+      : 2280,  : 2.19 % , magazines
+      : 1160,  : 1.46 % , cartes collectionables
+      : 1320,  : 1.46 % , sacs pour femmes et accesore petite enfance
+    2060    ------    lampes et accesoires decoration pour maison
+      : 2060,  : 76.58 % , lampes et accesoires decoration pour maison
+      : 1560,  : 8.36 % , Mobilier et produits decoration/rangement pour la maison
+      : 1920,  : 3.69 % , linge de maison (cousins, rideaux, serviettes, nappes, draps)
+      : 1302,  : 1.94 % , jeux d'exterieur
+      : 2585,  : 1.55 % , outillage et accesoires pour jardinage
+    2220    ------    accesoires mascots/pets
+      : 2220,  : 81.76 % , accesoires mascots/pets
+      : 1280,  : 2.35 % , jouets, peluches, poupees
+      : 2060,  : 2.35 % , lampes et accesoires decoration pour maison
+      : 1940,  : 2.35 % , nouriture (cafes,infusions,conserves, epices,etc)
+      : 2585,  : 1.76 % , outillage et accesoires pour jardinage
+    2280    ------    magazines
+      : 2280,  : 72.08 % , magazines
+      : 10,  : 8.07 % , livres
+      : 2403,  : 7.43 % , livres et bds
+      : 2705,  : 3.93 % , bds et livres
+      : 1160,  : 1.91 % , cartes collectionables
+    2403    ------    livres et bds
+      : 2403,  : 69.98 % , livres et bds
+      : 2280,  : 15.42 % , magazines
+      : 10,  : 5.78 % , livres
+      : 2705,  : 2.64 % , bds et livres
+      : 1140,  : 1.42 % , produits derives “geeks” et figurines
+    2462    ------    consoles de jeux video et jeux videos
+      : 2462,  : 67.65 % , consoles de jeux video et jeux videos
+      : 50,  : 7.19 % ,  accesoires jeux video
+      : 1281,  : 4.9 % , jeux de societe/cartes
+      : 40,  : 4.9 % , jeux video pour pc et consoles
+      : 60,  : 3.59 % , consoles de jeux video
+    2522    ------    produits de papeterie et rangement bureau
+      : 2522,  : 90.72 % , produits de papeterie et rangement bureau
+      : 2585,  : 1.21 % , outillage et accesoires pour jardinage
+      : 2280,  : 1.01 % , magazines
+      : 2060,  : 0.81 % , lampes et accesoires decoration pour maison
+      : 1160,  : 0.71 % , cartes collectionables
+    2582    ------    mobilier d'exterieur et accesoires (parasols,pots,tentes,etc)
+      : 2582,  : 66.45 % , mobilier d'exterieur et accesoires (parasols,pots,tentes,etc)
+      : 1560,  : 8.66 % , Mobilier et produits decoration/rangement pour la maison
+      : 2060,  : 7.14 % , lampes et accesoires decoration pour maison
+      : 2585,  : 6.06 % , outillage et accesoires pour jardinage
+      : 2583,  : 2.81 % , accesoires de piscine
+    2583    ------    accesoires de piscine
+      : 2583,  : 97.31 % , accesoires de piscine
+      : 2585,  : 0.73 % , outillage et accesoires pour jardinage
+      : 2060,  : 0.29 % , lampes et accesoires decoration pour maison
+      : 2582,  : 0.24 % , mobilier d'exterieur et accesoires (parasols,pots,tentes,etc)
+      : 1302,  : 0.24 % , jeux d'exterieur
+    2585    ------    outillage et accesoires pour jardinage
+      : 2585,  : 75.24 % , outillage et accesoires pour jardinage
+      : 2060,  : 4.19 % , lampes et accesoires decoration pour maison
+      : 1560,  : 4.0 % , Mobilier et produits decoration/rangement pour la maison
+      : 2582,  : 3.81 % , mobilier d'exterieur et accesoires (parasols,pots,tentes,etc)
+      : 2583,  : 3.05 % , accesoires de piscine
+    2705    ------    bds et livres
+      : 2705,  : 59.38 % , bds et livres
+      : 10,  : 16.05 % , livres
+      : 2280,  : 13.73 % , magazines
+      : 2403,  : 3.48 % , livres et bds
+      : 1160,  : 2.13 % , cartes collectionables
+    2905    ------    Jeu En téléchargement
+      : 2905,  : 98.94 % , Jeu En téléchargement
+      : 1281,  : 1.06 % , jeux de societe/cartes
+      : 1920,  : 0.0 % , linge de maison (cousins, rideaux, serviettes, nappes, draps)
+      : 2705,  : 0.0 % , bds et livres
+      : 2585,  : 0.0 % , outillage et accesoires pour jardinage
+    
+
+
+### Tableau croisé
+
+
+```python
+df_cross
+```
+
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>predict</th>
+      <th>10</th>
+      <th>40</th>
+      <th>50</th>
+      <th>60</th>
+      <th>1140</th>
+      <th>1160</th>
+      <th>1180</th>
+      <th>1280</th>
+      <th>1281</th>
+      <th>1300</th>
+      <th>1301</th>
+      <th>1302</th>
+      <th>1320</th>
+      <th>1560</th>
+      <th>1920</th>
+      <th>1940</th>
+      <th>2060</th>
+      <th>2220</th>
+      <th>2280</th>
+      <th>2403</th>
+      <th>2462</th>
+      <th>2522</th>
+      <th>2582</th>
+      <th>2583</th>
+      <th>2585</th>
+      <th>2705</th>
+      <th>2905</th>
+    </tr>
+    <tr>
+      <th>prdtypecode</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>10</th>
+      <td>0.403595</td>
+      <td>0.035948</td>
+      <td>0.003268</td>
+      <td>0.000000</td>
+      <td>0.011438</td>
+      <td>0.029412</td>
+      <td>0.006536</td>
+      <td>0.008170</td>
+      <td>0.009804</td>
+      <td>0.008170</td>
+      <td>0.001634</td>
+      <td>0.000000</td>
+      <td>0.006536</td>
+      <td>0.003268</td>
+      <td>0.000000</td>
+      <td>0.004902</td>
+      <td>0.001634</td>
+      <td>0.000000</td>
+      <td>0.215686</td>
+      <td>0.148693</td>
+      <td>0.001634</td>
+      <td>0.008170</td>
+      <td>0.000000</td>
+      <td>0.001634</td>
+      <td>0.004902</td>
+      <td>0.083333</td>
+      <td>0.001634</td>
+    </tr>
+    <tr>
+      <th>40</th>
+      <td>0.069098</td>
+      <td>0.579655</td>
+      <td>0.044146</td>
+      <td>0.003839</td>
+      <td>0.015355</td>
+      <td>0.055662</td>
+      <td>0.015355</td>
+      <td>0.017274</td>
+      <td>0.042226</td>
+      <td>0.005758</td>
+      <td>0.000000</td>
+      <td>0.005758</td>
+      <td>0.003839</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.003839</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.051823</td>
+      <td>0.021113</td>
+      <td>0.038388</td>
+      <td>0.003839</td>
+      <td>0.003839</td>
+      <td>0.003839</td>
+      <td>0.000000</td>
+      <td>0.009597</td>
+      <td>0.005758</td>
+    </tr>
+    <tr>
+      <th>50</th>
+      <td>0.002801</td>
+      <td>0.033613</td>
+      <td>0.742297</td>
+      <td>0.002801</td>
+      <td>0.028011</td>
+      <td>0.011204</td>
+      <td>0.000000</td>
+      <td>0.028011</td>
+      <td>0.011204</td>
+      <td>0.011204</td>
+      <td>0.000000</td>
+      <td>0.019608</td>
+      <td>0.005602</td>
+      <td>0.011204</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.008403</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.072829</td>
+      <td>0.002801</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.005602</td>
+      <td>0.000000</td>
+      <td>0.002801</td>
+    </tr>
+    <tr>
+      <th>60</th>
+      <td>0.000000</td>
+      <td>0.012422</td>
+      <td>0.024845</td>
+      <td>0.850932</td>
+      <td>0.000000</td>
+      <td>0.006211</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.006211</td>
+      <td>0.006211</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.006211</td>
+      <td>0.000000</td>
+      <td>0.080745</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.006211</td>
+    </tr>
+    <tr>
+      <th>1140</th>
+      <td>0.016698</td>
+      <td>0.014842</td>
+      <td>0.005566</td>
+      <td>0.000000</td>
+      <td>0.762523</td>
+      <td>0.038961</td>
+      <td>0.014842</td>
+      <td>0.031540</td>
+      <td>0.012987</td>
+      <td>0.014842</td>
+      <td>0.001855</td>
+      <td>0.001855</td>
+      <td>0.009276</td>
+      <td>0.001855</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.011132</td>
+      <td>0.000000</td>
+      <td>0.020408</td>
+      <td>0.018553</td>
+      <td>0.001855</td>
+      <td>0.011132</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.003711</td>
+      <td>0.003711</td>
+      <td>0.001855</td>
+    </tr>
+    <tr>
+      <th>1160</th>
+      <td>0.015267</td>
+      <td>0.019084</td>
+      <td>0.001272</td>
+      <td>0.000000</td>
+      <td>0.013995</td>
+      <td>0.843511</td>
+      <td>0.005089</td>
+      <td>0.001272</td>
+      <td>0.011450</td>
+      <td>0.002545</td>
+      <td>0.001272</td>
+      <td>0.001272</td>
+      <td>0.007634</td>
+      <td>0.001272</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.036896</td>
+      <td>0.013995</td>
+      <td>0.001272</td>
+      <td>0.006361</td>
+      <td>0.001272</td>
+      <td>0.001272</td>
+      <td>0.003817</td>
+      <td>0.008906</td>
+      <td>0.001272</td>
+    </tr>
+    <tr>
+      <th>1180</th>
+      <td>0.020548</td>
+      <td>0.075342</td>
+      <td>0.020548</td>
+      <td>0.000000</td>
+      <td>0.054795</td>
+      <td>0.082192</td>
+      <td>0.465753</td>
+      <td>0.054795</td>
+      <td>0.054795</td>
+      <td>0.020548</td>
+      <td>0.013699</td>
+      <td>0.006849</td>
+      <td>0.006849</td>
+      <td>0.013699</td>
+      <td>0.000000</td>
+      <td>0.006849</td>
+      <td>0.027397</td>
+      <td>0.000000</td>
+      <td>0.027397</td>
+      <td>0.013699</td>
+      <td>0.000000</td>
+      <td>0.013699</td>
+      <td>0.000000</td>
+      <td>0.006849</td>
+      <td>0.000000</td>
+      <td>0.006849</td>
+      <td>0.006849</td>
+    </tr>
+    <tr>
+      <th>1280</th>
+      <td>0.015609</td>
+      <td>0.013528</td>
+      <td>0.005203</td>
+      <td>0.001041</td>
+      <td>0.073881</td>
+      <td>0.010406</td>
+      <td>0.002081</td>
+      <td>0.637877</td>
+      <td>0.027055</td>
+      <td>0.083247</td>
+      <td>0.001041</td>
+      <td>0.042664</td>
+      <td>0.020812</td>
+      <td>0.007284</td>
+      <td>0.002081</td>
+      <td>0.002081</td>
+      <td>0.010406</td>
+      <td>0.000000</td>
+      <td>0.006243</td>
+      <td>0.008325</td>
+      <td>0.004162</td>
+      <td>0.011446</td>
+      <td>0.004162</td>
+      <td>0.005203</td>
+      <td>0.003122</td>
+      <td>0.001041</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>1281</th>
+      <td>0.035377</td>
+      <td>0.033019</td>
+      <td>0.004717</td>
+      <td>0.000000</td>
+      <td>0.028302</td>
+      <td>0.037736</td>
+      <td>0.021226</td>
+      <td>0.275943</td>
+      <td>0.403302</td>
+      <td>0.007075</td>
+      <td>0.009434</td>
+      <td>0.033019</td>
+      <td>0.007075</td>
+      <td>0.000000</td>
+      <td>0.002358</td>
+      <td>0.000000</td>
+      <td>0.007075</td>
+      <td>0.002358</td>
+      <td>0.021226</td>
+      <td>0.002358</td>
+      <td>0.009434</td>
+      <td>0.028302</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.004717</td>
+      <td>0.018868</td>
+      <td>0.007075</td>
+    </tr>
+    <tr>
+      <th>1300</th>
+      <td>0.007187</td>
+      <td>0.003080</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.007187</td>
+      <td>0.005133</td>
+      <td>0.001027</td>
+      <td>0.019507</td>
+      <td>0.001027</td>
+      <td>0.919918</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.004107</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.005133</td>
+      <td>0.000000</td>
+      <td>0.015400</td>
+      <td>0.003080</td>
+      <td>0.000000</td>
+      <td>0.003080</td>
+      <td>0.001027</td>
+      <td>0.002053</td>
+      <td>0.001027</td>
+      <td>0.001027</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>1301</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.005917</td>
+      <td>0.017751</td>
+      <td>0.005917</td>
+      <td>0.881657</td>
+      <td>0.023669</td>
+      <td>0.017751</td>
+      <td>0.017751</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.005917</td>
+      <td>0.000000</td>
+      <td>0.011834</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.005917</td>
+      <td>0.000000</td>
+      <td>0.005917</td>
+    </tr>
+    <tr>
+      <th>1302</th>
+      <td>0.009862</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.005917</td>
+      <td>0.007890</td>
+      <td>0.000000</td>
+      <td>0.082840</td>
+      <td>0.011834</td>
+      <td>0.007890</td>
+      <td>0.003945</td>
+      <td>0.733728</td>
+      <td>0.021696</td>
+      <td>0.007890</td>
+      <td>0.005917</td>
+      <td>0.000000</td>
+      <td>0.009862</td>
+      <td>0.003945</td>
+      <td>0.001972</td>
+      <td>0.003945</td>
+      <td>0.001972</td>
+      <td>0.009862</td>
+      <td>0.023669</td>
+      <td>0.027613</td>
+      <td>0.015779</td>
+      <td>0.000000</td>
+      <td>0.001972</td>
+    </tr>
+    <tr>
+      <th>1320</th>
+      <td>0.013393</td>
+      <td>0.002976</td>
+      <td>0.001488</td>
+      <td>0.000000</td>
+      <td>0.010417</td>
+      <td>0.011905</td>
+      <td>0.000000</td>
+      <td>0.052083</td>
+      <td>0.004464</td>
+      <td>0.000000</td>
+      <td>0.004464</td>
+      <td>0.020833</td>
+      <td>0.697917</td>
+      <td>0.028274</td>
+      <td>0.022321</td>
+      <td>0.005952</td>
+      <td>0.058036</td>
+      <td>0.004464</td>
+      <td>0.008929</td>
+      <td>0.014881</td>
+      <td>0.000000</td>
+      <td>0.019345</td>
+      <td>0.004464</td>
+      <td>0.002976</td>
+      <td>0.008929</td>
+      <td>0.001488</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>1560</th>
+      <td>0.001974</td>
+      <td>0.000000</td>
+      <td>0.000987</td>
+      <td>0.000000</td>
+      <td>0.000987</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.003949</td>
+      <td>0.000000</td>
+      <td>0.000987</td>
+      <td>0.000987</td>
+      <td>0.006910</td>
+      <td>0.009872</td>
+      <td>0.782823</td>
+      <td>0.044423</td>
+      <td>0.000987</td>
+      <td>0.071076</td>
+      <td>0.000987</td>
+      <td>0.001974</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.010859</td>
+      <td>0.036525</td>
+      <td>0.004936</td>
+      <td>0.018756</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>1920</th>
+      <td>0.002378</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.001189</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.015458</td>
+      <td>0.014269</td>
+      <td>0.916766</td>
+      <td>0.000000</td>
+      <td>0.038050</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.001189</td>
+      <td>0.000000</td>
+      <td>0.002378</td>
+      <td>0.003567</td>
+      <td>0.002378</td>
+      <td>0.002378</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>1940</th>
+      <td>0.007299</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.007299</td>
+      <td>0.014599</td>
+      <td>0.000000</td>
+      <td>0.007299</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.007299</td>
+      <td>0.000000</td>
+      <td>0.014599</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.868613</td>
+      <td>0.000000</td>
+      <td>0.007299</td>
+      <td>0.021898</td>
+      <td>0.007299</td>
+      <td>0.000000</td>
+      <td>0.036496</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>2060</th>
+      <td>0.000972</td>
+      <td>0.001944</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.006803</td>
+      <td>0.001944</td>
+      <td>0.000972</td>
+      <td>0.009718</td>
+      <td>0.000000</td>
+      <td>0.000972</td>
+      <td>0.000972</td>
+      <td>0.019436</td>
+      <td>0.008746</td>
+      <td>0.083576</td>
+      <td>0.036929</td>
+      <td>0.003887</td>
+      <td>0.765792</td>
+      <td>0.001944</td>
+      <td>0.004859</td>
+      <td>0.000972</td>
+      <td>0.000972</td>
+      <td>0.012634</td>
+      <td>0.012634</td>
+      <td>0.007775</td>
+      <td>0.015549</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>2220</th>
+      <td>0.005882</td>
+      <td>0.005882</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.023529</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.005882</td>
+      <td>0.011765</td>
+      <td>0.011765</td>
+      <td>0.005882</td>
+      <td>0.017647</td>
+      <td>0.023529</td>
+      <td>0.023529</td>
+      <td>0.817647</td>
+      <td>0.000000</td>
+      <td>0.005882</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.005882</td>
+      <td>0.017647</td>
+      <td>0.017647</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>2280</th>
+      <td>0.080679</td>
+      <td>0.015924</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.007431</td>
+      <td>0.019108</td>
+      <td>0.003185</td>
+      <td>0.001062</td>
+      <td>0.001062</td>
+      <td>0.003185</td>
+      <td>0.000000</td>
+      <td>0.002123</td>
+      <td>0.005308</td>
+      <td>0.002123</td>
+      <td>0.002123</td>
+      <td>0.001062</td>
+      <td>0.001062</td>
+      <td>0.001062</td>
+      <td>0.720807</td>
+      <td>0.074310</td>
+      <td>0.004246</td>
+      <td>0.008493</td>
+      <td>0.001062</td>
+      <td>0.002123</td>
+      <td>0.003185</td>
+      <td>0.039278</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>2403</th>
+      <td>0.057809</td>
+      <td>0.012170</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.014199</td>
+      <td>0.011156</td>
+      <td>0.001014</td>
+      <td>0.001014</td>
+      <td>0.002028</td>
+      <td>0.002028</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.003043</td>
+      <td>0.000000</td>
+      <td>0.001014</td>
+      <td>0.001014</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.154158</td>
+      <td>0.699797</td>
+      <td>0.001014</td>
+      <td>0.009128</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.003043</td>
+      <td>0.026369</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>2462</th>
+      <td>0.009804</td>
+      <td>0.049020</td>
+      <td>0.071895</td>
+      <td>0.035948</td>
+      <td>0.019608</td>
+      <td>0.016340</td>
+      <td>0.006536</td>
+      <td>0.003268</td>
+      <td>0.049020</td>
+      <td>0.003268</td>
+      <td>0.000000</td>
+      <td>0.003268</td>
+      <td>0.009804</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.003268</td>
+      <td>0.016340</td>
+      <td>0.019608</td>
+      <td>0.676471</td>
+      <td>0.003268</td>
+      <td>0.000000</td>
+      <td>0.003268</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>2522</th>
+      <td>0.006054</td>
+      <td>0.002018</td>
+      <td>0.001009</td>
+      <td>0.000000</td>
+      <td>0.003027</td>
+      <td>0.007064</td>
+      <td>0.000000</td>
+      <td>0.003027</td>
+      <td>0.004036</td>
+      <td>0.005045</td>
+      <td>0.001009</td>
+      <td>0.001009</td>
+      <td>0.004036</td>
+      <td>0.004036</td>
+      <td>0.003027</td>
+      <td>0.006054</td>
+      <td>0.008073</td>
+      <td>0.001009</td>
+      <td>0.010091</td>
+      <td>0.004036</td>
+      <td>0.000000</td>
+      <td>0.907164</td>
+      <td>0.005045</td>
+      <td>0.002018</td>
+      <td>0.012109</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>2582</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.002165</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.010823</td>
+      <td>0.000000</td>
+      <td>0.006494</td>
+      <td>0.000000</td>
+      <td>0.019481</td>
+      <td>0.010823</td>
+      <td>0.086580</td>
+      <td>0.012987</td>
+      <td>0.008658</td>
+      <td>0.071429</td>
+      <td>0.004329</td>
+      <td>0.004329</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.008658</td>
+      <td>0.664502</td>
+      <td>0.028139</td>
+      <td>0.060606</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>2583</th>
+      <td>0.000489</td>
+      <td>0.000489</td>
+      <td>0.000489</td>
+      <td>0.000000</td>
+      <td>0.001466</td>
+      <td>0.000977</td>
+      <td>0.000000</td>
+      <td>0.001466</td>
+      <td>0.000489</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.002443</td>
+      <td>0.002443</td>
+      <td>0.000977</td>
+      <td>0.000000</td>
+      <td>0.000977</td>
+      <td>0.002931</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.001466</td>
+      <td>0.002443</td>
+      <td>0.973131</td>
+      <td>0.007328</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>2585</th>
+      <td>0.005714</td>
+      <td>0.000000</td>
+      <td>0.001905</td>
+      <td>0.000000</td>
+      <td>0.001905</td>
+      <td>0.009524</td>
+      <td>0.000000</td>
+      <td>0.005714</td>
+      <td>0.000000</td>
+      <td>0.007619</td>
+      <td>0.001905</td>
+      <td>0.019048</td>
+      <td>0.024762</td>
+      <td>0.040000</td>
+      <td>0.000000</td>
+      <td>0.001905</td>
+      <td>0.041905</td>
+      <td>0.001905</td>
+      <td>0.001905</td>
+      <td>0.001905</td>
+      <td>0.000000</td>
+      <td>0.011429</td>
+      <td>0.038095</td>
+      <td>0.030476</td>
+      <td>0.752381</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>2705</th>
+      <td>0.160542</td>
+      <td>0.009671</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.003868</td>
+      <td>0.021277</td>
+      <td>0.001934</td>
+      <td>0.003868</td>
+      <td>0.003868</td>
+      <td>0.001934</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.005803</td>
+      <td>0.000000</td>
+      <td>0.001934</td>
+      <td>0.001934</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.137331</td>
+      <td>0.034816</td>
+      <td>0.000000</td>
+      <td>0.003868</td>
+      <td>0.000000</td>
+      <td>0.003868</td>
+      <td>0.005803</td>
+      <td>0.593810</td>
+      <td>0.003868</td>
+    </tr>
+    <tr>
+      <th>2905</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.010582</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.989418</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+### Matrice de confusion
+
+
+    
+![png](/images/ReadMe_ML_files/output_60_0.png)
+    
