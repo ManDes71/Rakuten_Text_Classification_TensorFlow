@@ -780,7 +780,7 @@ ds.show_confusion_matrix(y_orig, y_pred)
 
 
     
-![png](\images\ReadMe_ML_files\output_29_0.png)
+![png](/images/ReadMe_ML_files/output_29_0.png)
     
 
 
