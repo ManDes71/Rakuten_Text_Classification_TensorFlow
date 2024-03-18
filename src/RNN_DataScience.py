@@ -35,6 +35,7 @@ import unicodedata
 from nltk.corpus import stopwords
 import swifter
 import spacy
+from langdetect import detect
 
 
 
@@ -579,7 +580,7 @@ class RNN_STEMMER(DS_RNN):
         self.set_REPORT_LIBELLE("EMBEDDING STEMMER")
         
      def add_traitement(self,mots,pays_langue) :
-        mots = Stemmer_sentence(mots,pays_langue)
+        mots = self.preprocess_stemmer(mots,pays_langue)
         return mots   
         
      def create_modele(self,Matrix=None,vocab_size=0):
@@ -610,7 +611,7 @@ class RNN_LEMMER(DS_RNN):
         self.set_REPORT_LIBELLE("EMBEDDING LEMMER")
         
      def add_traitement(self,mots,pays_langue) :
-        mots = Stemmer_sentence(mots,pays_langue)
+        mots = self.preprocess_lemmer(mots,pays_langue)
         return mots   
         
      def create_modele(self,Matrix=None,vocab_size=0):

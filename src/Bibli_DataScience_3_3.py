@@ -16,7 +16,7 @@ import pickle
 from joblib import dump,load
 import tensorflow as tf
 import configparser
-#from langdetect import detect_langs
+from langdetect import detect_langs
 import json
 from tensorflow.keras.preprocessing.text import tokenizer_from_json
 
