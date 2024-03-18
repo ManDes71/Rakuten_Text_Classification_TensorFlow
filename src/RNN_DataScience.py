@@ -420,16 +420,16 @@ class DS_RNN(ds.DS_Model):
         
         
         if stemming:
-            X_train_preprocessed = [self.preprocess_stemmer(tokens) for tokens in X_train]
-            X_test_preprocessed = [self.preprocess_stemmer(tokens) for tokens in X_test]
+            X_train = [self.preprocess_stemmer(tokens) for tokens in X_train]
+            X_test = [self.preprocess_stemmer(tokens) for tokens in X_test]
         elif lemming:
-            X_train_preprocessed = [self.preprocess_lemmer(tokens) for tokens in X_train]
-            X_test_preprocessed = [self.preprocess_lemmer(tokens) for tokens in X_test]
+            X_train = [self.preprocess_lemmer(tokens) for tokens in X_train]
+            X_test = [self.preprocess_lemmer(tokens) for tokens in X_test]
         elif spacy:
             print("etape 4/6")
-            X_train_preprocessed = [self.preprocess_spacy(tokens) for tokens in X_train]
+            X_train = [self.preprocess_spacy(tokens) for tokens in X_train]
             print("etape 5/6")
-            X_test_preprocessed = [self.preprocess_spacy(tokens) for tokens in X_test]
+            X_test = [self.preprocess_spacy(tokens) for tokens in X_test]
             print("etape 6/6")
     
         
