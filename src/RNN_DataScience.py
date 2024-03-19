@@ -208,7 +208,7 @@ class DS_RNN(ds.DS_Model):
         #text = text.lower()
         text = text.translate(str.maketrans('', '', string.punctuation))
         # Utilise le français comme langue de fallback pour la tokenisation
-        tokens = word_tokenize(text, language='french' if lang not in ['en', 'es', 'de', 'nl', 'it', 'ca'] else lang)
+        tokens = word_tokenize(text, language='french' if lang not in ['english', 'spanish', 'dutch', 'german', 'italian'] else lang)
         # Définit le français comme langue de fallback pour les stop words
         stop_words = set(stopwords.words({
             'en': 'english',
