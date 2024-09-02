@@ -706,5 +706,31 @@ class RNN_SPACY(DS_RNN):
         
         self.set_model(model)
 
-        return model           
+        return model       
+         
+class RNN_GRU(DS_RNN):     
 
+     def __init__(self, nom_modele):
+        super().__init__(nom_modele)
+            
+        self.__nom_modele = nom_modele
+        self.set_REPORT_ID("GRU")
+        self.set_REPORT_MODELE(nom_modele)
+        self.set_REPORT_LIBELLE("RNN_GRU")
+        
+     def create_modele(self,Matrix=None,len_embedding_dict=0):
+        model = Sequential()
+        model.add(Embedding(self.NUM_WORDS, self.EMBEDDING_DIM))
+        print("NUM_WORDS", self.NUM_WORDS)
+        print("EMBEDDING_DIM", self.EMBEDDING_DIM)
+        model.add(RNN(GRUCell(128), return_sequences=True))
+        model.add(Dropout(0.5))
+        model.add(GlobalAveragePooling1D())
+        model.add(Dense(256, activation='relu'))
+        model.add(Dropout(0.5))
+        model.add(Dense(27, activation='softmax'))
+        model.compile(optimizer=Adam(learning_rate=1e-3), loss='categorical_crossentropy', metrics=['accuracy'])    
+        
+        self.set_model(model)
+
+        return model  
