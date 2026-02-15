@@ -25,9 +25,16 @@ from tensorflow.keras.preprocessing.text import tokenizer_from_json
 #    return configparser.__v
 
 
+# Chemin absolu du projet
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 config = configparser.ConfigParser()
-config.read('/content/Rakuten_Text_Classification_TensorFlow/Rakuten_config_colab.ini')
+
+config_path = os.path.join(project_root, 'Rakuten_config.ini')
+
+
+
+config.read(config_path)
 
 def get_RACINE_DOSSIER() :
     return config['DOSSIER']['RACINE_DOSSIER']
