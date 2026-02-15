@@ -12,6 +12,7 @@ tensorflow==2.16.1
 tqdm==4.65.0
 spacy==3.7.2
 swifter
+gensim==4.3.2
 
 # Modèles spaCy (tous en version 3.7.x pour compatibilité avec spacy 3.7.2)
 https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
