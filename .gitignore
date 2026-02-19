@@ -36,12 +36,12 @@ venv.bak/
 # =============================================================================
 # Modèles et poids (fichiers volumineux)
 # =============================================================================
-*.keras
-*.h5
-*.hdf5
-*.pb
-*.ckpt
-*.ckpt.*
+fichiers/*.keras
+fichiers/*.h5
+fichiers/*.hdf5
+fichiers/*.pb
+fichiers/*.ckpt
+fichiers/*.ckpt.*
 saved_model/
 
 # =============================================================================
