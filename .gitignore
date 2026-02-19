@@ -32,6 +32,7 @@ venv.bak/
 .ipynb_checkpoints/
 */.ipynb_checkpoints/
 *.ipynb_checkpoints
+notebooks/ReadMe_RNN.ipynb
 
 # =============================================================================
 # Modèles et poids (fichiers volumineux)
