@@ -1,5 +1,8 @@
 # ***PROJET RAKUTEN***  
-
+## Version 2.0  
+Passage de Tensorflow == 2.10.0 à Tensorflow == 2.16.1  
+Sauvegarde des modèles :  *.h5   ->  *.keras  
+Possibilité de fonctionner sous Docker  
 # **🔧 Configuration WSL + Docker**
 ## **1. Prérequis**
 
@@ -9,7 +12,7 @@ Support GPU optionnel (nécessite WSL2 + NVIDIA drivers + CUDA)
 
 Dans votre terminal WSL :
 ```
-docker build -t tensorflow-keras-gpu .
+docker build -t tensorflow-keras-rnn .
 chmod +x run.sh
 ./run.sh
 ```

@@ -96,10 +96,12 @@ def load_dataframe(name_sav) :
     df = pd.read_csv(get_RACINE_DOSSIER() + name_sav)    
     return df
 def save_model(model,name_sav) :
-    print(get_RACINE_DOSSIER() + name_sav+'.h5')
-    model.save_weights(get_RACINE_DOSSIER() + name_sav+'.h5')
-def load_model(model,name_sav) :
-    model.load_weights(get_RACINE_DOSSIER() + name_sav+'.h5')    
+    path = get_RACINE_DOSSIER() + name_sav + '.keras'
+    print(path)
+    model.save(path)
+def load_model(name_sav) :
+    path = get_RACINE_DOSSIER() + name_sav + '.keras'
+    return tf.keras.models.load_model(path)    
     
     
 def joblib_dump(model,name_sav) :
