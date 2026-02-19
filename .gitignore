@@ -52,7 +52,7 @@ input/X_test_update.csv
 input/Y_train_CVw08PX.csv
 input/df_langue.csv
 input/*_df_predict
-input/*_weight.*
+input/*.keras
 
 # =============================================================================
 # Fichiers pickle / sérialisés
