@@ -42,6 +42,7 @@ fichiers/*.hdf5
 fichiers/*.pb
 fichiers/*.ckpt
 fichiers/*.ckpt.*
+fichiers/*.json
 saved_model/
 
 # =============================================================================
