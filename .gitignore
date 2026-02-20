@@ -48,9 +48,7 @@ saved_model/
 # =============================================================================
 # Fichiers de données volumineux
 # =============================================================================
-input/X_train_update.csv
 input/X_test_update.csv
-input/Y_train_CVw08PX.csv
 input/df_langue.csv
 input/*_df_predict
 input/*.keras
