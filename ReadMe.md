@@ -38,8 +38,8 @@ Par exemple, dans le catalogue de Rakuten France, **un produit** avec une désig
 **description des fichiers**
 
 le but du projet est de prédire le code de chaque produit tel que défini dans le catalogue de Rakuten France.  
-La catégorisation des annonces de produits se fait par le biais de la désignation, de la description (quand elle est présente) et des images.
-Téléchargez le dossier de données d’images et configurez le directement en local depuis https://challengedata.ens.fr/participants/challenges/35/
+La catégorisation des annonces de produits se fait par le biais de la désignation, de la description (quand elle est présente) et des images.  
+Téléchargez le dossier de données d’images et configurez le directement en local depuis https://challengedata.ens.fr/participants/challenges/35/  
 Les fichiers de données sont distribués ainsi :  
 ***X_train_update.csv*** : fichier d'entrée d'entraînement  
 ***Y_train_CVw08PX.csv*** : fichier de sortie d'entraînement  
